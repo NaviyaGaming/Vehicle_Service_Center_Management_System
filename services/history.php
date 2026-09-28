@@ -2,55 +2,204 @@
 session_start();
 require_once '../db_connect.php';
 
+// Security: If not logged in, send to login page
 if (!isset($_SESSION['user_email'])) {
     header("Location: ../loginPage/login.html");
     exit;
 }
 
-// Fetch ONLY this user's bookings
+// Fetch ONLY this user's bookings, newest first
  $stmt = $pdo->prepare("SELECT * FROM bookings WHERE user_email = ? ORDER BY created_at DESC");
  $stmt->execute([$_SESSION['user_email']]);
  $bookings = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+ $userEmail = $_SESSION['user_email'];
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Service History</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>My Service History | TorquePoint</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { --primary: #0052CC; --bg-main: #F8FAFC; --surface: #FFFFFF; --text-main: #0F172A; --text-muted: #64748B; --border: #E2E8F0; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg-main); color: var(--text-main); margin: 0; }
-        .header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 20px 6%; display: flex; justify-content: space-between; }
-        .header a { text-decoration: none; color: var(--primary); font-weight: 600; }
-        .container { max-width: 900px; margin: 40px auto; padding: 0 20px; }
-        h1 { font-family: 'Montserrat', sans-serif; font-size: 28px; margin-bottom: 24px; }
-        .card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 24px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; }
-        .card-info h3 { margin: 0 0 8px 0; font-size: 18px; } .card-info p { margin: 0; color: var(--text-muted); font-size: 14px; }
-        .btn { background: var(--primary); color: white; padding: 10px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; font-weight: 600; }
+        :root {
+            --primary: #0052CC;
+            --primary-hover: #0042A5;
+            --bg-main: #F8FAFC;
+            --surface: #FFFFFF;
+            --text-main: #0F172A;
+            --text-muted: #64748B;
+            --success: #10B981;
+            --warning: #F59E0B;
+            --danger: #EF4444;
+            --border-color: #E2E8F0;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-main);
+            color: var(--text-main);
+            min-height: 100vh;
+        }
+
+        /* ===== HEADER ===== */
+        .top-header {
+            width: 100%; padding: 20px 6%;
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            background: var(--surface);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .brand { display: flex; align-items: center; gap: 12px; text-decoration: none; color: inherit; }
+        .brand-logo-img { width: 40px; height: 40px; object-fit: contain; border-radius: 8px; }
+        .brand-text h2 { font-family: 'Montserrat', sans-serif; font-size: 24px; font-weight: 700; }
+        .brand-text h2 span { color: var(--primary); }
+        
+        .header-actions { display: flex; align-items: center; gap: 16px; }
+        .user-info { display: flex; align-items: center; gap: 8px; color: var(--text-muted); font-size: 14px; font-weight: 500; }
+        .btn-logout { color: var(--danger); text-decoration: none; font-weight: 600; font-size: 14px; }
+
+        /* ===== MAIN CONTAINER ===== */
+        .container { max-width: 1100px; margin: 50px auto; padding: 0 20px; }
+
+        .page-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; flex-wrap: wrap; gap: 16px; }
+        .page-head h1 { font-family: 'Montserrat', sans-serif; font-size: 28px; font-weight: 600; color: var(--text-main); }
+        .btn-primary { background: var(--primary); color: var(--surface); padding: 12px 20px; border-radius: 8px; text-decoration: none; font-size: 14px; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; transition: 0.2s; }
+        .btn-primary:hover { background: var(--primary-hover); }
+
+        /* ===== DATA TABLE (Industrial Precision Guidelines) ===== */
+        .table-card {
+            background: var(--surface);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+        }
+
+        .data-table { width: 100%; border-collapse: collapse; }
+        .data-table th { 
+            text-align: left; padding: 16px 24px; 
+            background: var(--bg-main); color: var(--text-muted); 
+            font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; 
+            text-transform: uppercase; letter-spacing: 0.5px; 
+            border-bottom: 1px solid var(--border-color);
+        }
+        .data-table td { padding: 20px 24px; font-size: 14px; color: var(--text-main); border-bottom: 1px solid var(--border-color); }
+        .data-table tr:last-child td { border-bottom: none; }
+        .data-table tr:hover td { background: #FCFCFD; }
+
+        .id-mono { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--text-muted); }
+        .text-muted { color: var(--text-muted); font-size: 13px; }
+
+        /* Status Badges */
+        .status-badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; text-transform: capitalize; }
+        .status-paid { background: rgba(16, 185, 129, 0.1); color: var(--success); }
+        .status-pending { background: rgba(245, 158, 11, 0.1); color: var(--warning); }
+
+        /* Action Button in Table */
+        .btn-view { background: transparent; color: var(--primary); border: 1px solid var(--border-color); padding: 8px 14px; border-radius: 6px; text-decoration: none; font-size: 13px; font-weight: 600; transition: 0.2s; }
+        .btn-view:hover { background: var(--bg-main); border-color: var(--primary); }
+
+        /* Empty State */
+        .empty-state { text-align: center; padding: 60px 20px; }
+        .empty-state i { font-size: 40px; color: var(--border-color); margin-bottom: 16px; }
+        .empty-state h3 { font-family: 'Montserrat', sans-serif; font-size: 18px; margin-bottom: 8px; }
+        .empty-state p { color: var(--text-muted); font-size: 14px; margin-bottom: 24px; }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .data-table { display: block; overflow-x: auto; white-space: nowrap; }
+            .top-header { padding: 16px 4%; }
+            .user-info { display: none; }
+        }
     </style>
 </head>
 <body>
-    <div class="header">
-        <h2>TorquePoint</h2>
-        <a href="services.php">Book New Service</a>
-    </div>
-    <div class="container">
-        <h1>My Service History</h1>
-        <?php if (count($bookings) == 0): ?>
-            <p>You have no past services yet.</p>
-        <?php endif; ?>
 
-        <?php foreach ($bookings as $booking): ?>
-            <div class="card">
-                <div class="card-info">
-                    <h3><?php echo htmlspecialchars($booking['service_name']); ?></h3>
-                    <p>Vehicle: <?php echo htmlspecialchars($booking['vehicle_details']); ?> | Date: <?php echo date('M d, Y', strtotime($booking['created_at'])); ?> | Status: <?php echo $booking['status']; ?></p>
-                </div>
-                <a href="../invoice/invoice.php?id=<?php echo $booking['id']; ?>" class="btn">View Invoice</a>
+    <!-- HEADER -->
+    <header class="top-header">
+        <a href="../home/home.html" class="brand">
+            <img src="logo.png" alt="Logo" class="brand-logo-img" onerror="this.style.display='none'">
+            <div class="brand-text">
+                <h2>Torque<span>Point</span></h2>
             </div>
-        <?php endforeach; ?>
-    </div>
+        </a>
+        <div class="header-actions">
+            <div class="user-info">
+                <i class="fa-solid fa-user"></i>
+                <?php echo htmlspecialchars($userEmail); ?>
+            </div>
+            <a href="logout.php" class="btn-logout">Logout</a>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <main class="container">
+        <div class="page-head">
+            <h1>My Service History</h1>
+            <a href="services.php" class="btn-primary">
+                <i class="fa-solid fa-plus"></i> Book New Service
+            </a>
+        </div>
+
+        <div class="table-card">
+            <?php if (count($bookings) == 0): ?>
+                <!-- Empty State Design -->
+                <div class="empty-state">
+                    <i class="fa-solid fa-car-side"></i>
+                    <h3>No Services Yet</h3>
+                    <p>You haven't booked any vehicle services yet. Get started today!</p>
+                    <a href="services.php" class="btn-primary" style="display: inline-flex;">
+                        Book Your First Service
+                    </a>
+                </div>
+            <?php else: ?>
+                <!-- Data Table -->
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>JOB ID</th>
+                            <th>VEHICLE</th>
+                            <th>SERVICE TYPE</th>
+                            <th>PRICE</th>
+                            <th>STATUS</th>
+                            <th>ACTION</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($bookings as $booking): ?>
+                            <tr>
+                                <td class="id-mono">#INV-<?php echo $booking['id']; ?></td>
+                                <td>
+                                    <?php echo htmlspecialchars($booking['vehicle_details']); ?>
+                                    <div class="text-muted"><?php echo date('M d, Y', strtotime($booking['created_at'])); ?></div>
+                                </td>
+                                <td><?php echo htmlspecialchars($booking['service_name']); ?></td>
+                                <td class="id-mono"><?php echo htmlspecialchars($booking['price']); ?></td>
+                                <td>
+                                    <?php 
+                                        $statusClass = $booking['status'] === 'Paid' ? 'status-paid' : 'status-pending';
+                                        echo "<span class='status-badge $statusClass'>{$booking['status']}</span>";
+                                    ?>
+                                </td>
+                                <td>
+                                    <a href="../invoice/invoice.php?id=<?php echo $booking['id']; ?>" class="btn-view">
+                                        <i class="fa-solid fa-eye"></i> View Invoice
+                                    </a>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            <?php endif; ?>
+        </div>
+    </main>
+
 </body>
 </html>
