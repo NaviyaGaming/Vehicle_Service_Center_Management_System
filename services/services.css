@@ -1,0 +1,229 @@
+/* TORQUEPOINT VEHICLE SERVICE MANAGEMENT SYSTEM - INDUSTRIAL PRECISION */
+:root {
+    --primary: #0052CC;
+    --primary-hover: #0042A5;
+    --bg-main: #F8FAFC;
+    --surface: #FFFFFF;
+    --text-main: #0F172A;
+    --text-muted: #64748B;
+    --success: #10B981;
+    --warning: #F59E0B;
+    --danger: #EF4444;
+    --border-color: #E2E8F0;
+    --input-bg: #F8FAFC;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    background: var(--bg-main);
+    color: var(--text-main);
+    display: flex;
+    flex-direction: column;
+}
+
+/* HEADER */
+.top-header {
+    width: 100%;
+    padding: 20px 6%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--surface);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.brand { display: flex; align-items: center; gap: 12px; }
+.brand-icon { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; }
+.brand-logo-img { width: 100%; height: 100%; object-fit: contain; border-radius: 8px; }
+.brand-text h2 { font-family: 'Montserrat', sans-serif; font-size: 24px; font-weight: 700; color: var(--text-main); }
+.brand-text h2 span { color: var(--primary); }
+
+.header-link {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 14px; border: 1px solid var(--border-color);
+    border-radius: 20px; color: var(--text-muted); font-size: 13px; font-weight: 500;
+}
+.online-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--success); }
+
+/* MAIN CONTAINER */
+.container { width: 90%; max-width: 1200px; margin: 60px auto; flex: 1; }
+
+/* HERO SECTION */
+.hero { text-align: center; margin-bottom: 40px; }
+.small-title {
+    display: inline-block; padding: 6px 16px;
+    border: 1px solid var(--border-color); border-radius: 20px;
+    color: var(--primary); background: rgba(0, 82, 204, 0.05);
+    font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600;
+    letter-spacing: 1px; margin-bottom: 16px;
+}
+.hero h1 {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 36px; line-height: 1.2; color: var(--text-main);
+    font-weight: 700; margin-bottom: 16px;
+}
+.hero h1 span { display: block; color: var(--primary); }
+.description { max-width: 600px; margin: auto; color: var(--text-muted); font-size: 16px; line-height: 1.6; }
+
+/* FILTER BOX (Updated for 4 columns) */
+.filter-box {
+    background: var(--surface);
+    color: var(--text-main);
+    padding: 24px;
+    border-radius: 8px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr) auto; /* 4 dropdowns + button */
+    gap: 16px;
+    align-items: flex-end;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0,0,0,0.05);
+    border: 1px solid var(--border-color);
+    margin-bottom: 40px;
+}
+.form-group { display: flex; flex-direction: column; }
+.form-group label {
+    margin-bottom: 8px;
+    color: var(--text-main); font-size: 13px; font-weight: 600;
+}
+.form-group select {
+    width: 100%; height: 44px; padding: 0 16px;
+    border: 1px solid var(--border-color); border-radius: 8px;
+    background: var(--input-bg); color: var(--text-main);
+    font-family: 'Inter', sans-serif; font-size: 14px; cursor: pointer;
+    transition: all 0.2s ease;
+}
+.form-group select:disabled { background: #f1f5f9; cursor: not-allowed; }
+.form-group select:hover:not(:disabled) { border-color: var(--text-muted); }
+.form-group select:focus:not(:disabled) {
+    outline: none; border-color: var(--primary); background: var(--surface);
+    box-shadow: 0 0 0 3px rgba(0, 82, 204, 0.1);
+}
+
+.btn-primary {
+    height: 44px; min-width: 160px; padding: 0 24px;
+    border: none; border-radius: 8px; background: var(--primary);
+    color: var(--surface); font-family: 'Inter', sans-serif;
+    font-size: 14px; font-weight: 600; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    transition: all 0.2s ease;
+}
+.btn-primary:disabled { background: #94a3b8; cursor: not-allowed; }
+.btn-primary:hover:not(:disabled) { background: var(--primary-hover); transform: translateY(-1px); }
+
+/* SERVICE RESULTS */
+.service-results { margin-top: 20px; }
+.result-title {
+    font-family: 'Montserrat', sans-serif;
+    color: var(--text-main); font-size: 20px; font-weight: 600;
+    margin-bottom: 24px; padding-left: 16px;
+    border-left: 4px solid var(--primary);
+}
+
+/* SERVICE CARD */
+.service-card {
+    background: var(--surface);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 24px;
+    margin-bottom: 16px;
+    display: flex;
+    justify-content: space-between;
+    gap: 24px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    transition: all 0.25s ease;
+    position: relative;
+}
+.service-card:hover { border-color: var(--text-muted); transform: translateY(-2px); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+
+.service-card.selected {
+    border: 2px solid var(--primary);
+    background: rgba(0, 82, 204, 0.02);
+}
+.service-card.selected::before {
+    content: 'SELECTED';
+    position: absolute;
+    top: 16px; right: 16px;
+    background: var(--success); color: var(--surface);
+    padding: 4px 10px; border-radius: 12px;
+    font-size: 10px; font-weight: 700; letter-spacing: 0.5px;
+}
+
+.service-info { flex: 1; }
+.service-info h3 { font-family: 'Montserrat', sans-serif; color: var(--text-main); font-size: 18px; font-weight: 600; margin-bottom: 8px; }
+.service-info p { color: var(--text-muted); font-size: 14px; line-height: 1.5; margin-bottom: 8px; }
+.service-info strong { color: var(--text-main); font-weight: 600; }
+
+.price-section { width: 220px; padding-left: 24px; text-align: right; border-left: 1px solid var(--border-color); display: flex; flex-direction: column; justify-content: space-between; }
+.price-label { color: var(--text-muted); font-size: 12px; font-weight: 500; text-transform: uppercase; }
+.price { font-family: 'JetBrains Mono', monospace; color: var(--text-main); font-size: 20px; font-weight: 600; margin: 4px 0 12px; }
+
+.book-button {
+    width: 100%; padding: 10px; border: 1px solid var(--border-color);
+    border-radius: 8px; background: var(--surface); color: var(--primary);
+    font-family: 'Inter', sans-serif; font-weight: 600; font-size: 13px;
+    cursor: pointer; transition: 0.2s;
+}
+.book-button:hover { background: var(--bg-main); border-color: var(--primary); }
+.service-card.selected .book-button { background: var(--primary); color: var(--surface); border-color: var(--primary); }
+
+/* CHECKOUT SECTION */
+.checkout-section {
+    background: var(--surface);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 32px;
+    margin-top: 40px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+.hidden { display: none; }
+.checkout-title { font-family: 'Montserrat', sans-serif; font-size: 20px; font-weight: 600; margin-bottom: 24px; color: var(--text-main); }
+.summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+.summary-item { background: var(--bg-main); padding: 16px; border-radius: 8px; display: flex; flex-direction: column; gap: 4px; }
+.summary-label { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text-muted); }
+.summary-value { font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 600; color: var(--text-main); }
+.summary-total { background: rgba(0, 82, 204, 0.05); }
+.summary-total .summary-value { color: var(--primary); font-size: 18px; }
+
+.btn-pay {
+    width: 100%; padding: 16px; border: none; border-radius: 8px;
+    background: var(--primary); color: var(--surface);
+    font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 600;
+    cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
+    transition: 0.2s;
+}
+.btn-pay:hover { background: var(--primary-hover); }
+
+.message {
+    background: var(--surface); border: 1px solid var(--border-color);
+    border-left: 4px solid var(--warning); border-radius: 8px;
+    padding: 24px; text-align: center; color: var(--text-muted);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+/* FOOTER */
+.footer {
+    width: 100%; padding: 24px 6%;
+    display: flex; justify-content: space-between; align-items: center;
+    border-top: 1px solid var(--border-color); background: var(--surface);
+    color: var(--text-muted); font-size: 13px;
+}
+.footer-links { display: flex; gap: 24px; }
+.footer-links span { cursor: pointer; transition: 0.2s; }
+.footer-links span:hover { color: var(--primary); }
+
+/* RESPONSIVE */
+@media (max-width: 1000px) {
+    .filter-box { grid-template-columns: 1fr 1fr; }
+    .filter-box > button { grid-column: span 2; }
+}
+@media (max-width: 600px) {
+    .filter-box { grid-template-columns: 1fr; }
+    .filter-box > button { grid-column: span 1; }
+    .service-card { flex-direction: column; }
+    .price-section { width: 100%; padding-left: 0; padding-top: 16px; border-left: none; border-top: 1px solid var(--border-color); text-align: left; }
+    .summary-grid { grid-template-columns: 1fr 1fr; }
+    .footer { flex-direction: column; gap: 12px; text-align: center; }
+}

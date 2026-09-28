@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loading - Torque Point</title>
+    
+    <!-- Google Fonts Request -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Montserrat:wght@600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Exact color palette variables */
+        :root {
+            --primary: #0052CC;      /* Cobalt */
+            --bg: #FFFFFF;           /* White */
+            --surface: #FFFFFF;      /* White */
+            --text-main: #05070b;    /* Slate 900 */
+            --text-muted: #495d79;   /* Slate 500 */
+            --border: #E2E8F0;       /* Slate 200 */
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            background-color: var(--bg);
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .loader-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 45px 65px;
+            border-radius: 12px;
+        }
+
+        /* Brand Typography */
+        .brand {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 20px;
+            letter-spacing: -0.5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .brand span {
+            color: var(--primary);
+        }
+
+        /* Logo Image Style with Initial Low Opacity */
+        .system-logo {
+            width: 250px;
+            height: auto;
+            margin-bottom: 25px;
+            opacity: 0.5; /* Starts faint (using decimal for standard CSS) */
+            transition: opacity 0.4s ease-in-out; /* Smooth fade-in transition */
+        }
+
+        /* Class added via JavaScript when loading finishes */
+        .system-logo.fade-in {
+            opacity: 1; /* Fully visible */
+        }
+
+        /* Left-aligned wrapper for text and progress bar */
+        .loading-content {
+            align-self: flex-start;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        /* Secondary Text & Blinking Dots Animation */
+        .loading-text {
+            color: var(--text-muted);
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 10px;
+            letter-spacing: 0.3px;
+        }
+
+        .loading-text .dots span {
+            animation: blink 1.4s infinite both;
+        }
+
+        .loading-text .dots span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .loading-text .dots span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes blink {
+            0% { opacity: 0.2; }
+            20% { opacity: 1; }
+            100% { opacity: 0.2; }
+        }
+
+        /* Precision Progress Bar */
+        .progress-track {
+            width: 250px;
+            height: 6px;
+            background-color: var(--border);
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-fill {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            background-color: var(--text-main);
+            width: 0%;
+            border-radius: 4px;
+            animation: load 2.5s ease-in-out forwards;
+        }
+
+        @keyframes load {
+            0% { width: 0%; }
+            100% { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="loader-container">
+        <!-- Dashboard Brand Name -->
+        <div class="brand">
+            Toque<span>Point</span>
+        </div>
+        
+        <!-- Logo Image Placed Under Brand Name -->
+        <img src="logo.png" alt="System Logo" class="system-logo" id="appLogo">
+
+        <!-- Left Aligned Wrapper for Loading Elements -->
+        <div class="loading-content">
+            <!-- Loading Text with Blinking Dots -->
+            <div class="loading-text">
+                Loading<span class="dots"><span>.</span><span>.</span><span>.</span></span>
+            </div>
+            
+            <!-- Progress Track -->
+            <div class="progress-track">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Trigger opacity increase on the logo right before loading completes (e.g., at 2.2 seconds)
+        setTimeout(() => {
+            document.getElementById('appLogo').classList.add('fade-in');
+        }, 2200);
+
+        // Redirect to your main PHP dashboard after the loading animation completes
+        setTimeout(() => {
+            window.location.href = 'home/home.html';
+        }, 3000); 
+    </script>
+</body>
+</html>
