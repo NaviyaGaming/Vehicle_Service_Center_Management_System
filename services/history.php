@@ -2,13 +2,11 @@
 session_start();
 require_once '../db_connect.php';
 
-// Security: If not logged in, send to login page
 if (!isset($_SESSION['user_email'])) {
     header("Location: ../loginPage/login.html");
     exit;
 }
 
-// Fetch ONLY this user's bookings, newest first
  $stmt = $pdo->prepare("SELECT * FROM bookings WHERE user_email = ? ORDER BY created_at DESC");
  $stmt->execute([$_SESSION['user_email']]);
  $bookings = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -27,69 +25,31 @@ if (!isset($_SESSION['user_email'])) {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --primary: #0052CC;
-            --primary-hover: #0042A5;
-            --bg-main: #F8FAFC;
-            --surface: #FFFFFF;
-            --text-main: #0F172A;
-            --text-muted: #64748B;
-            --success: #10B981;
-            --warning: #F59E0B;
-            --danger: #EF4444;
-            --border-color: #E2E8F0;
+            --primary: #0052CC; --primary-hover: #0042A5; --bg-main: #F8FAFC; --surface: #FFFFFF;
+            --text-main: #0F172A; --text-muted: #64748B; --success: #10B981; --warning: #F59E0B;
+            --danger: #EF4444; --border-color: #E2E8F0; --slate-400: #94a3b8;
         }
-
         * { margin: 0; padding: 0; box-sizing: border-box; }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background: var(--bg-main);
-            color: var(--text-main);
-            min-height: 100vh;
-        }
-
-        /* ===== HEADER ===== */
-        .top-header {
-            width: 100%; padding: 20px 6%;
-            display: flex; justify-content: space-between; align-items: center;
-            border-bottom: 1px solid var(--border-color);
-            background: var(--surface);
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-        }
+        body { font-family: 'Inter', sans-serif; background: var(--bg-main); color: var(--text-main); min-height: 100vh; }
+        
+        .top-header { width: 100%; padding: 20px 6%; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); background: var(--surface); box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
         .brand { display: flex; align-items: center; gap: 12px; text-decoration: none; color: inherit; }
         .brand-logo-img { width: 40px; height: 40px; object-fit: contain; border-radius: 8px; }
         .brand-text h2 { font-family: 'Montserrat', sans-serif; font-size: 24px; font-weight: 700; }
         .brand-text h2 span { color: var(--primary); }
-        
         .header-actions { display: flex; align-items: center; gap: 16px; }
         .user-info { display: flex; align-items: center; gap: 8px; color: var(--text-muted); font-size: 14px; font-weight: 500; }
         .btn-logout { color: var(--danger); text-decoration: none; font-weight: 600; font-size: 14px; }
 
-        /* ===== MAIN CONTAINER ===== */
         .container { max-width: 1100px; margin: 50px auto; padding: 0 20px; }
-
         .page-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; flex-wrap: wrap; gap: 16px; }
         .page-head h1 { font-family: 'Montserrat', sans-serif; font-size: 28px; font-weight: 600; color: var(--text-main); }
         .btn-primary { background: var(--primary); color: var(--surface); padding: 12px 20px; border-radius: 8px; text-decoration: none; font-size: 14px; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; transition: 0.2s; }
         .btn-primary:hover { background: var(--primary-hover); }
 
-        /* ===== DATA TABLE (Industrial Precision Guidelines) ===== */
-        .table-card {
-            background: var(--surface);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
-        }
-
+        .table-card { background: var(--surface); border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
         .data-table { width: 100%; border-collapse: collapse; }
-        .data-table th { 
-            text-align: left; padding: 16px 24px; 
-            background: var(--bg-main); color: var(--text-muted); 
-            font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 600; 
-            text-transform: uppercase; letter-spacing: 0.5px; 
-            border-bottom: 1px solid var(--border-color);
-        }
+        .data-table th { text-align: left; padding: 16px 24px; background: var(--bg-main); color: var(--text-muted); font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border-color); }
         .data-table td { padding: 20px 24px; font-size: 14px; color: var(--text-main); border-bottom: 1px solid var(--border-color); }
         .data-table tr:last-child td { border-bottom: none; }
         .data-table tr:hover td { background: #FCFCFD; }
@@ -97,22 +57,27 @@ if (!isset($_SESSION['user_email'])) {
         .id-mono { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--text-muted); }
         .text-muted { color: var(--text-muted); font-size: 13px; }
 
-        /* Status Badges */
         .status-badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; text-transform: capitalize; }
         .status-paid { background: rgba(16, 185, 129, 0.1); color: var(--success); }
         .status-pending { background: rgba(245, 158, 11, 0.1); color: var(--warning); }
+        .status-cancelled { background: rgba(100, 116, 139, 0.1); color: var(--text-muted); }
 
-        /* Action Button in Table */
-        .btn-view { background: transparent; color: var(--primary); border: 1px solid var(--border-color); padding: 8px 14px; border-radius: 6px; text-decoration: none; font-size: 13px; font-weight: 600; transition: 0.2s; }
+        .action-group { display: flex; gap: 8px; }
+        .btn-view { background: transparent; color: var(--primary); border: 1px solid var(--border-color); padding: 8px 14px; border-radius: 6px; text-decoration: none; font-size: 13px; font-weight: 600; transition: 0.2s; display: inline-block; }
         .btn-view:hover { background: var(--bg-main); border-color: var(--primary); }
+        
+        /* New Cancel Button Styling */
+        .btn-cancel { background: transparent; color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.3); padding: 8px 14px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+        .btn-cancel:hover { background: var(--danger); color: white; border-color: var(--danger); }
 
-        /* Empty State */
         .empty-state { text-align: center; padding: 60px 20px; }
         .empty-state i { font-size: 40px; color: var(--border-color); margin-bottom: 16px; }
         .empty-state h3 { font-family: 'Montserrat', sans-serif; font-size: 18px; margin-bottom: 8px; }
         .empty-state p { color: var(--text-muted); font-size: 14px; margin-bottom: 24px; }
 
-        /* Responsive */
+        /* Toast Notification */
+        .toast { position: fixed; bottom: 20px; right: 20px; background: var(--text-main); color: white; padding: 12px 20px; border-radius: 8px; display: none; z-index: 1000; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+
         @media (max-width: 768px) {
             .data-table { display: block; overflow-x: auto; white-space: nowrap; }
             .top-header { padding: 16px 4%; }
@@ -122,45 +87,33 @@ if (!isset($_SESSION['user_email'])) {
 </head>
 <body>
 
-    <!-- HEADER -->
     <header class="top-header">
-        <a href="../home/home.html" class="brand">
+        <a href="services.php" class="brand">
             <img src="logo.png" alt="Logo" class="brand-logo-img" onerror="this.style.display='none'">
-            <div class="brand-text">
-                <h2>Torque<span>Point</span></h2>
-            </div>
+            <div class="brand-text"><h2>Torque<span>Point</span></h2></div>
         </a>
         <div class="header-actions">
-            <div class="user-info">
-                <i class="fa-solid fa-user"></i>
-                <?php echo htmlspecialchars($userEmail); ?>
-            </div>
+            <div class="user-info"><i class="fa-solid fa-user"></i> <?php echo htmlspecialchars($userEmail); ?></div>
+            <a href="profile.php" style="color: var(--text-main); text-decoration: none; font-size: 14px; font-weight: 500;">Profile</a>
             <a href="logout.php" class="btn-logout">Logout</a>
         </div>
     </header>
 
-    <!-- MAIN CONTENT -->
     <main class="container">
         <div class="page-head">
             <h1>My Service History</h1>
-            <a href="services.php" class="btn-primary">
-                <i class="fa-solid fa-plus"></i> Book New Service
-            </a>
+            <a href="services.php" class="btn-primary"><i class="fa-solid fa-plus"></i> Book New Service</a>
         </div>
 
         <div class="table-card">
             <?php if (count($bookings) == 0): ?>
-                <!-- Empty State Design -->
                 <div class="empty-state">
                     <i class="fa-solid fa-car-side"></i>
                     <h3>No Services Yet</h3>
                     <p>You haven't booked any vehicle services yet. Get started today!</p>
-                    <a href="services.php" class="btn-primary" style="display: inline-flex;">
-                        Book Your First Service
-                    </a>
+                    <a href="services.php" class="btn-primary" style="display: inline-flex;">Book Your First Service</a>
                 </div>
             <?php else: ?>
-                <!-- Data Table -->
                 <table class="data-table">
                     <thead>
                         <tr>
@@ -174,7 +127,7 @@ if (!isset($_SESSION['user_email'])) {
                     </thead>
                     <tbody>
                         <?php foreach ($bookings as $booking): ?>
-                            <tr>
+                            <tr id="row-<?php echo $booking['id']; ?>">
                                 <td class="id-mono">#INV-<?php echo $booking['id']; ?></td>
                                 <td>
                                     <?php echo htmlspecialchars($booking['vehicle_details']); ?>
@@ -184,14 +137,25 @@ if (!isset($_SESSION['user_email'])) {
                                 <td class="id-mono"><?php echo htmlspecialchars($booking['price']); ?></td>
                                 <td>
                                     <?php 
-                                        $statusClass = $booking['status'] === 'Paid' ? 'status-paid' : 'status-pending';
-                                        echo "<span class='status-badge $statusClass'>{$booking['status']}</span>";
+                                        $status = $booking['status'];
+                                        $statusClass = 'status-pending';
+                                        if ($status === 'Paid') $statusClass = 'status-paid';
+                                        if ($status === 'Cancelled') $statusClass = 'status-cancelled';
+                                        echo "<span class='status-badge $statusClass'>$status</span>";
                                     ?>
                                 </td>
                                 <td>
-                                    <a href="../invoice/invoice.php?id=<?php echo $booking['id']; ?>" class="btn-view">
-                                        <i class="fa-solid fa-eye"></i> View Invoice
-                                    </a>
+                                    <div class="action-group">
+                                        <a href="../invoice/invoice.php?id=<?php echo $booking['id']; ?>" class="btn-view">
+                                            <i class="fa-solid fa-eye"></i> View
+                                        </a>
+                                        
+                                        <?php if ($booking['status'] === 'Pending Payment'): ?>
+                                            <button class="btn-cancel" onclick="cancelBooking(<?php echo $booking['id']; ?>)">
+                                                Cancel
+                                            </button>
+                                        <?php endif; ?>
+                                    </div>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
@@ -201,5 +165,39 @@ if (!isset($_SESSION['user_email'])) {
         </div>
     </main>
 
+    <div class="toast" id="toast"></div>
+
+    <script>
+        function cancelBooking(bookingId) {
+            if (!confirm("Are you sure you want to cancel this booking?")) {
+                return;
+            }
+
+            fetch('cancel_booking.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ booking_id: bookingId })
+            })
+            .then(res => res.json())
+            .then(data => {
+                const toast = document.getElementById('toast');
+                toast.innerText = data.message;
+                toast.style.display = 'block';
+                
+                if (data.success) {
+                    toast.style.background = '#10B981'; // Green for success
+                    // Reload the page after 1.5 seconds to show updated status
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    toast.style.background = '#EF4444'; // Red for error
+                    setTimeout(() => toast.style.display = 'none', 3000);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while cancelling the booking.');
+            });
+        }
+    </script>
 </body>
 </html>
