@@ -41,7 +41,7 @@ if (!isset($_SESSION['user_email'])) {
         .user-info { display: flex; align-items: center; gap: 8px; color: var(--text-muted); font-size: 14px; font-weight: 500; }
         .btn-logout { color: var(--danger); text-decoration: none; font-weight: 600; font-size: 14px; }
 
-        .container { max-width: 1100px; margin: 50px auto; padding: 0 20px; }
+        .container { max-width: 1200px; margin: 50px auto; padding: 0 20px; }
         .page-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; flex-wrap: wrap; gap: 16px; }
         .page-head h1 { font-family: 'Montserrat', sans-serif; font-size: 28px; font-weight: 600; color: var(--text-main); }
         .btn-primary { background: var(--primary); color: var(--surface); padding: 12px 20px; border-radius: 8px; text-decoration: none; font-size: 14px; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; transition: 0.2s; }
@@ -50,7 +50,7 @@ if (!isset($_SESSION['user_email'])) {
         .table-card { background: var(--surface); border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
         .data-table { width: 100%; border-collapse: collapse; }
         .data-table th { text-align: left; padding: 16px 24px; background: var(--bg-main); color: var(--text-muted); font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border-color); }
-        .data-table td { padding: 20px 24px; font-size: 14px; color: var(--text-main); border-bottom: 1px solid var(--border-color); }
+        .data-table td { padding: 20px 24px; font-size: 14px; color: var(--text-main); border-bottom: 1px solid var(--border-color); vertical-align: middle; }
         .data-table tr:last-child td { border-bottom: none; }
         .data-table tr:hover td { background: #FCFCFD; }
 
@@ -66,7 +66,6 @@ if (!isset($_SESSION['user_email'])) {
         .btn-view { background: transparent; color: var(--primary); border: 1px solid var(--border-color); padding: 8px 14px; border-radius: 6px; text-decoration: none; font-size: 13px; font-weight: 600; transition: 0.2s; display: inline-block; }
         .btn-view:hover { background: var(--bg-main); border-color: var(--primary); }
         
-        /* New Cancel Button Styling */
         .btn-cancel { background: transparent; color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.3); padding: 8px 14px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; transition: 0.2s; }
         .btn-cancel:hover { background: var(--danger); color: white; border-color: var(--danger); }
 
@@ -75,8 +74,32 @@ if (!isset($_SESSION['user_email'])) {
         .empty-state h3 { font-family: 'Montserrat', sans-serif; font-size: 18px; margin-bottom: 8px; }
         .empty-state p { color: var(--text-muted); font-size: 14px; margin-bottom: 24px; }
 
-        /* Toast Notification */
         .toast { position: fixed; bottom: 20px; right: 20px; background: var(--text-main); color: white; padding: 12px 20px; border-radius: 8px; display: none; z-index: 1000; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+
+        /* ==========================================
+           Visual Service Tracker Styles
+           ========================================== */
+        .tracker { display: flex; gap: 4px; align-items: center; }
+        .tracker-step { display: flex; flex-direction: column; align-items: center; position: relative; width: 90px; }
+        .tracker-step:not(:last-child)::after {
+            content: ''; position: absolute; top: 6px; left: 50%; width: 100%; height: 2px;
+            background: var(--border-color); z-index: 0;
+        }
+        .tracker-step .dot {
+            width: 12px; height: 12px; border-radius: 50%; background: var(--border-color);
+            border: 2px solid var(--surface); z-index: 1; transition: all 0.3s ease;
+        }
+        .tracker-step .dot.active { background: var(--primary); }
+        .tracker-step .dot.current { 
+            background: var(--primary); 
+            box-shadow: 0 0 0 4px rgba(0, 82, 204, 0.2); 
+            transform: scale(1.2); 
+        }
+        .tracker-label { 
+            margin-top: 8px; font-size: 10px; color: var(--text-muted); 
+            text-align: center; font-weight: 500; line-height: 1.2; 
+        }
+        .tracker-step:has(.dot.active) .tracker-label { color: var(--primary); font-weight: 600; }
 
         @media (max-width: 768px) {
             .data-table { display: block; overflow-x: auto; white-space: nowrap; }
@@ -138,10 +161,37 @@ if (!isset($_SESSION['user_email'])) {
                                 <td>
                                     <?php 
                                         $status = $booking['status'];
-                                        $statusClass = 'status-pending';
-                                        if ($status === 'Paid') $statusClass = 'status-paid';
-                                        if ($status === 'Cancelled') $statusClass = 'status-cancelled';
-                                        echo "<span class='status-badge $statusClass'>$status</span>";
+                                        // Define the stages for the progress bar
+                                        $stages = ['Vehicle Received', 'Awaiting Parts', 'In Progress', 'Ready for Pickup'];
+                                        
+                                        if ($status === 'Pending Payment') {
+                                            echo "<span class='status-badge status-pending'>Pending Payment</span>";
+                                        } elseif ($status === 'Cancelled') {
+                                            echo "<span class='status-badge status-cancelled'>Cancelled</span>";
+                                        } elseif ($status === 'Completed') {
+                                            echo "<span class='status-badge status-paid'>Service Completed ✓</span>";
+                                        } else {
+                                            // Draw the visual progress bar!
+                                            echo "<div class='tracker'>";
+                                            foreach ($stages as $stage) {
+                                                $active = false;
+                                                $current = false;
+                                                if ($status === $stage) { $current = true; $active = true; }
+                                                
+                                                // Logic to light up previous stages
+                                                if ($status === 'In Progress' && in_array($stage, ['Vehicle Received'])) $active = true;
+                                                if ($status === 'Ready for Pickup' && in_array($stage, ['Vehicle Received', 'Awaiting Parts', 'In Progress'])) $active = true;
+
+                                                $dot_class = $active ? 'dot active' : 'dot';
+                                                if ($current) $dot_class .= ' current';
+                                                
+                                                echo "<div class='tracker-step'>";
+                                                echo "<div class='$dot_class'></div>";
+                                                echo "<span class='tracker-label'>$stage</span>";
+                                                echo "</div>";
+                                            }
+                                            echo "</div>";
+                                        }
                                     ?>
                                 </td>
                                 <td>
