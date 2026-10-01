@@ -136,12 +136,12 @@ if (in_array($new_status, $notify_stages)) {
             $mail->isSMTP();
             $mail->Host = 'smtp.gmail.com';
             $mail->SMTPAuth = true;
-            $mail->Username = 'navindu.subasinghe@gmail.com'; 
-            $mail->Password = 'upzh xqev rtqk unee';       
+            $mail->Username = 'pointtorque@gmail.com'; 
+            $mail->Password = 'vfsz hneu wgcb bysp';       
             $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
             $mail->Port = 587;
 
-            $mail->setFrom('navindu.subasinghe@gmail.com', 'TorquePoint Service Center');
+            $mail->setFrom('pointtorque@gmail.com', 'TorquePoint Service Center');
             $mail->addAddress($user_email); 
             
             $mail->isHTML(true);
