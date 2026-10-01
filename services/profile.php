@@ -13,6 +13,31 @@ if (!isset($_SESSION['user_email'])) {
  $stmt = $pdo->prepare("SELECT * FROM users WHERE email = ?");
  $stmt->execute([$email]);
  $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+// Fetch Quick Stats for the Profile Page
+ $stmt = $pdo->prepare("SELECT * FROM bookings WHERE user_email = ?");
+ $stmt->execute([$email]);
+ $bookings = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+ $totalBookings = count($bookings);
+ $totalSpent = 0;
+foreach ($bookings as $b) {
+    if ($b['status'] === 'Paid') {
+        $priceNum = floatval(str_replace(['Rs.', ' ', ','], '', $b['price']));
+        $totalSpent += $priceNum;
+    }
+}
+
+// Get user initials for Avatar
+ $name = $user['name'] ?? $email;
+ $initials = strtoupper(substr($name, 0, 1));
+if (strpos($name, ' ') !== false) {
+    $parts = explode(' ', $name);
+    $initials = strtoupper(substr($parts[0], 0, 1) . substr(end($parts), 0, 1));
+}
+
+// Format Member Since Date
+ $memberSince = date('M Y', strtotime($user['created_at']));
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -20,12 +45,15 @@ if (!isset($_SESSION['user_email'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Profile | TorquePoint</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root { --primary: #0052CC; --primary-hover: #0042A5; --bg-main: #F8FAFC; --surface: #FFFFFF; --text-main: #0F172A; --text-muted: #64748B; --success: #10B981; --danger: #EF4444; --border: #E2E8F0; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Inter', sans-serif; background: var(--bg-main); color: var(--text-main); }
+        
         .header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 20px 6%; display: flex; justify-content: space-between; align-items: center; }
         .brand { display: flex; align-items: center; gap: 12px; text-decoration: none; color: inherit; }
         .brand img { width: 40px; height: 40px; border-radius: 8px; }
@@ -35,18 +63,32 @@ if (!isset($_SESSION['user_email'])) {
         .nav-actions a:hover { color: var(--primary); }
         .nav-actions .logout { color: var(--danger); font-weight: 600; }
 
-        .container { max-width: 650px; margin: 40px auto; padding: 0 20px; }
+        .container { max-width: 1000px; margin: 40px auto; padding: 0 20px; display: grid; grid-template-columns: 1fr 1.5fr; gap: 30px; }
+        @media (max-width: 768px) { .container { grid-template-columns: 1fr; } }
         
-        .card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 32px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
-        .card h2 { font-family: 'Montserrat', sans-serif; font-size: 22px; margin-bottom: 24px; border-bottom: 1px solid var(--border); padding-bottom: 12px; }
-        
-        .form-group { margin-bottom: 20px; }
+        .card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 24px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+        .card-title { font-family: 'Montserrat', sans-serif; font-size: 18px; font-weight: 600; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 12px; }
+
+        /* Left Column - Profile Header */
+        .profile-header { text-align: center; padding: 32px 24px; }
+        .avatar { width: 80px; height: 80px; background: var(--primary); color: white; border-radius: 50%; margin: 0 auto 16px; display: flex; align-items: center; justify-content: center; font-family: 'Montserrat', sans-serif; font-size: 32px; font-weight: 700; }
+        .profile-name { font-family: 'Montserrat', sans-serif; font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+        .profile-email { color: var(--text-muted); font-size: 14px; margin-bottom: 16px; word-break: break-all; }
+        .badge { display: inline-block; background: rgba(0, 82, 204, 0.1); color: var(--primary); padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 24px; }
+        .stat-box { background: var(--bg-main); padding: 16px; border-radius: 8px; text-align: center; }
+        .stat-label { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--text-muted); margin-bottom: 4px; text-transform: uppercase; }
+        .stat-value { font-family: 'Montserrat', sans-serif; font-size: 18px; font-weight: 700; color: var(--text-main); }
+
+        /* Right Column - Edit Form */
+        .form-group { margin-bottom: 16px; }
         .form-group label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: var(--text-main); }
         .form-group input { width: 100%; padding: 12px 16px; border: 1px solid var(--border); border-radius: 8px; font-family: 'Inter', sans-serif; font-size: 14px; background: var(--bg-main); }
         .form-group input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(0,82,204,0.1); }
         .form-group input:disabled { background: #f1f5f9; cursor: not-allowed; color: var(--text-muted); }
         
-        .btn { background: var(--primary); color: white; border: none; padding: 14px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; width: 100%; font-size: 14px; transition: 0.2s; }
+        .btn { background: var(--primary); color: white; border: none; padding: 12px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; width: 100%; font-size: 14px; transition: 0.2s; }
         .btn:hover { background: var(--primary-hover); }
         
         .toast { position: fixed; bottom: 20px; right: 20px; background: var(--text-main); color: white; padding: 12px 20px; border-radius: 8px; display: none; z-index: 1000; }
@@ -68,13 +110,32 @@ if (!isset($_SESSION['user_email'])) {
     </div>
 
     <div class="container">
-        <!-- Profile Info Only -->
+        <!-- Left Column: Profile Info & Stats -->
+        <div class="card profile-header">
+            <div class="avatar"><?php echo $initials; ?></div>
+            <div class="profile-name"><?php echo htmlspecialchars($user['name'] ?? 'TorquePoint User'); ?></div>
+            <div class="profile-email"><?php echo htmlspecialchars($email); ?></div>
+            <div class="badge"><i class="fa-solid fa-calendar-check"></i> Member since <?php echo $memberSince; ?></div>
+            
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <div class="stat-label">Total Bookings</div>
+                    <div class="stat-value"><?php echo $totalBookings; ?></div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Total Spent</div>
+                    <div class="stat-value">Rs. <?php echo number_format($totalSpent, 0); ?></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Edit Form -->
         <div class="card">
-            <h2>Personal Information</h2>
+            <div class="card-title">Personal Information</div>
             <form id="profileForm">
                 <div class="form-group">
                     <label>Full Name</label>
-                    <input type="text" id="name" value="<?php echo htmlspecialchars($user['name'] ?? ''); ?>" required>
+                    <input type="text" id="name" value="<?php echo htmlspecialchars($user['name'] ?? ''); ?>" placeholder="Enter your full name" required>
                 </div>
                 <div class="form-group">
                     <label>Email Address</label>
@@ -96,7 +157,6 @@ if (!isset($_SESSION['user_email'])) {
     <div class="toast" id="toast"></div>
 
     <script>
-        // Handle Profile Update
         document.getElementById('profileForm').addEventListener('submit', function(e) {
             e.preventDefault();
             fetch('update_profile.php?action=update_profile', {
