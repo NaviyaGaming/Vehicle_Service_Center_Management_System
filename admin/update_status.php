@@ -1,8 +1,8 @@
 <?php
 session_start();
 require_once '../db_connect.php';
-//check 1
 // Include PHPMailer
+//check 2
 require_once '../PHPMailer/src/PHPMailer.php';
 require_once '../PHPMailer/src/SMTP.php';
 require_once '../PHPMailer/src/Exception.php';
