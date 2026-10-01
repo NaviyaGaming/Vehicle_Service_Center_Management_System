@@ -1,3 +1,5 @@
+// TORQUEPOINT - SERVICES JAVASCRIPT
+
 const vehicleType = document.getElementById("vehicleType");
 const vehicleMake = document.getElementById("vehicleMake");
 const vehicleModel = document.getElementById("vehicleModel");
@@ -6,195 +8,286 @@ const findBtn = document.getElementById("findBtn");
 const serviceResults = document.getElementById("serviceResults");
 const checkoutSection = document.getElementById("checkoutSection");
 
-// --- DATA: MAKES AND MODELS ---
-// --- DATA: MAKES AND MODELS ---
 const vehicleDatabase = {
     car: {
-        Toyota: ["Corolla", "Prius", "Aqua", "Vitz", "Camry", "Axio", "Premio", "Allion", "Yaris"],
-        Nissan: ["Sunny", "Wingroad", "Leaf", "Sylphy", "March", "Bluebird"],
-        Honda: ["Civic", "Fit", "Accord", "Grace", "Insight", "City"],
-        Suzuki: ["Alto", "Swift", "Wagon R", "Baleno", "K12"],
-        Mazda: ["3", "6", "Demio", "Axela", "CX-3"],
-        BMW: ["3 Series", "5 Series", "7 Series", "M3", "M5"],
-        "Mercedes-Benz": ["A-Class", "C-Class", "E-Class", "S-Class", "CLA"], // <-- Quotes needed here
-        Audi: ["A3", "A4", "A6", "A8", "RS3"],
-        Volkswagen: ["Polo", "Golf", "Passat", "Jetta", "Beetle"],
-        Mitsubishi: ["Lancer", "Mirage", "Lancer EX", "Galant"],
-        Jaguar: ["XE", "XF", "XJ", "F-Type"]
+        "Toyota": ["Corolla","Prius","Aqua","Vitz","Camry","Axio","Premio","Allion","Yaris"],
+        "Nissan": ["Sunny","Wingroad","Leaf","Sylphy","March","Bluebird"],
+        "Honda": ["Civic","Fit","Accord","Grace","Insight","City"],
+        "Suzuki": ["Alto","Swift","Wagon R","Baleno","K12"],
+        "Mazda": ["3","6","Demio","Axela","CX-3"],
+        "BMW": ["3 Series","5 Series","7 Series","M3","M5"],
+        "Mercedes-Benz": ["A-Class","C-Class","E-Class","S-Class","CLA"],
+        "Audi": ["A3","A4","A6","A8","RS3"],
+        "Volkswagen": ["Polo","Golf","Passat","Jetta","Beetle"],
+        "Mitsubishi": ["Lancer","Mirage","Lancer EX","Galant"],
+        "Jaguar": ["XE","XF","XJ","F-Type"]
     },
+
     van: {
-        Toyota: ["Hiace", "KDH", "Hiace Grand Cabin", "Estima", "Voxy", "Noah"],
-        Nissan: ["Caravan", "Vanette", "Elgrand", "Serena"],
-        Suzuki: ["Every", "APV"],
-        Mitsubishi: ["Grandis", "Delica", "Outlander"],
-        "Mercedes-Benz": ["Sprinter", "Vito", "V-Class"], // <-- Quotes needed here
-        Volkswagen: ["Transporter", "Caddy", "Multivan"]
+        "Toyota": ["Hiace","KDH","Hiace Grand Cabin","Estima","Voxy","Noah"],
+        "Nissan": ["Caravan","Vanette","Elgrand","Serena"],
+        "Suzuki": ["Every","APV"],
+        "Mitsubishi": ["Grandis","Delica","Outlander"],
+        "Mercedes-Benz": ["Sprinter","Vito","V-Class"],
+        "Volkswagen": ["Transporter","Caddy","Multivan"]
     },
+
     suv: {
-        Toyota: ["Fortuner", "RAV4", "Land Cruiser", "Prado", "Rush", "Harrier"],
-        Honda: ["CR-V", "Vezel", "HR-V", "BR-V", "Pilot"],
-        Nissan: ["X-Trail", "Juke", "Patrol", "Terrano"],
-        Mitsubishi: ["Outlander", "Pajero", "Montero", "ASX"],
-        Kia: ["Sportage", "Sorento", "Seltos"],
-        Hyundai: ["Tucson", "Santa Fe", "Creta", "Palisade"],
-        "Land Rover": ["Defender", "Range Rover", "Discovery", "Evoque", "Velar"], // <-- Quotes needed here
-        BMW: ["X1", "X3", "X5", "X6", "X7"],
-        Audi: ["Q3", "Q5", "Q7", "Q8"],
-        Jaguar: ["F-Pace", "E-Pace", "I-Pace"],
-        Jeep: ["Wrangler", "Cherokee", "Grand Cherokee"]
+        "Toyota": ["Fortuner","RAV4","Land Cruiser","Prado","Rush","Harrier"],
+        "Honda": ["CR-V","Vezel","HR-V","BR-V","Pilot"],
+        "Nissan": ["X-Trail","Juke","Patrol","Terrano"],
+        "Mitsubishi": ["Outlander","Pajero","Montero","ASX"],
+        "Kia": ["Sportage","Sorento","Seltos"],
+        "Hyundai": ["Tucson","Santa Fe","Creta","Palisade"],
+        "Land Rover": ["Defender","Range Rover","Discovery","Evoque","Velar"],
+        "BMW": ["X1","X3","X5","X6","X7"],
+        "Audi": ["Q3","Q5","Q7","Q8"],
+        "Jaguar": ["F-Pace","E-Pace","I-Pace"],
+        "Jeep": ["Wrangler","Cherokee","Grand Cherokee"]
     },
+
     motorcycle: {
-        Honda: ["Dio", "Hornet", "CBR 250", "Unicorn", "Activa", "CB350"],
-        Yamaha: ["FZ", "R15", "MT-15", "Fazer", "YZF-R1"],
-        Bajaj: ["Pulsar", "Dominar", "Discover", "Avenger"],
-        "Royal Enfield": ["Classic 350", "Himalayan", "Meteor 350", "Interceptor 650"], // <-- Quotes needed here
-        Suzuki: ["Gixxer", "Access", "V-Strom", "GSX-R"],
-        TVS: ["Apache", "Ntorq", "Jupiter"],
-        KTM: ["Duke 200", "Duke 390", "Adventure 390"],
-        Kawasaki: ["Ninja 400", "Z900", "Versys 650"]
+        "Honda": ["Dio","Hornet","CBR 250","Unicorn","Activa","CB350"],
+        "Yamaha": ["FZ","R15","MT-15","Fazer","YZF-R1"],
+        "Bajaj": ["Pulsar","Dominar","Discover","Avenger"],
+        "Royal Enfield": ["Classic 350","Himalayan","Meteor 350","Interceptor 650"],
+        "Suzuki": ["Gixxer","Access","V-Strom","GSX-R"],
+        "TVS": ["Apache","Ntorq","Jupiter"],
+        "KTM": ["Duke 200","Duke 390","Adventure 390"],
+        "Kawasaki": ["Ninja 400","Z900","Versys 650"]
     },
+
     truck: {
-        Isuzu: ["N-Series", "FRR", "FTR", "Elf"],
-        Tata: ["LPT", "Ace", "LPK", "Xenon"],
-        Mitsubishi: ["Canter", "Fighter", "FK"],
-        UD: ["Quon", "Kuzer", "MK"],
-        "Ashok Leyland": ["Comet", "Husky", "Captain"], // <-- Quotes needed here
-        "Mercedes-Benz": ["Atego", "Actros", "Arocs"] // <-- Quotes needed here
+        "Isuzu": ["N-Series","FRR","FTR","Elf"],
+        "Tata": ["LPT","Ace","LPK","Xenon"],
+        "Mitsubishi": ["Canter","Fighter","FK"],
+        "UD": ["Quon","Kuzer","MK"],
+        "Ashok Leyland": ["Comet","Husky","Captain"],
+        "Mercedes-Benz": ["Atego","Actros","Arocs"]
     },
+
     bus: {
-        Toyota: ["Coaster", "Hiace Commuter"],
-        Mitsubishi: ["Rosa", "Aero", "Fuso"],
-        Hyundai: ["County", "Universe", "Solati"],
-        "Ashok Leyland": ["Viking", "Leopard", "Sunbeam"], // <-- Quotes needed here
-        Isuzu: ["NQR Bus", "FRR Bus"]
+        "Toyota": ["Coaster","Hiace Commuter"],
+        "Mitsubishi": ["Rosa","Aero","Fuso"],
+        "Hyundai": ["County","Universe","Solati"],
+        "Ashok Leyland": ["Viking","Leopard","Sunbeam"],
+        "Isuzu": ["NQR Bus","FRR Bus"]
     }
 };
 
-// --- DATA: SERVICES ---
-// Specific prices for common models
-const services = {
+const yearRanges = {
+    "Corolla": [1990,2026], "Prius": [1997,2026], "Aqua": [2011,2026],
+    "Vitz": [1999,2019], "Camry": [1990,2026], "Axio": [2006,2026],
+    "Premio": [2001,2021], "Allion": [2001,2021], "Yaris": [1999,2026],
+    "Sunny": [1990,2026], "Wingroad": [1996,2018], "Leaf": [2010,2026],
+    "Sylphy": [2000,2026], "March": [1992,2022], "Bluebird": [1990,2012],
+    "Civic": [1990,2026], "Fit": [2001,2026], "Accord": [1990,2026],
+    "Grace": [2014,2020], "Insight": [1999,2022], "City": [1996,2026],
+    "Alto": [1990,2026], "Swift": [2004,2026], "Wagon R": [1993,2026],
+    "Baleno": [1995,2026], "K12": [2000,2020], "3": [2003,2026],
+    "6": [2002,2026], "Demio": [1996,2019], "Axela": [2003,2019],
+    "CX-3": [2015,2026], "3 Series": [1990,2026], "5 Series": [1990,2026],
+    "7 Series": [1990,2026], "M3": [1992,2026], "M5": [1990,2026],
+    "A-Class": [1997,2026], "C-Class": [1993,2026], "E-Class": [1990,2026],
+    "S-Class": [1990,2026], "CLA": [2013,2026], "A3": [1996,2026],
+    "A4": [1994,2026], "A6": [1994,2026], "A8": [1994,2026],
+    "RS3": [2011,2026], "Polo": [1990,2026], "Golf": [1990,2026],
+    "Passat": [1990,2026], "Jetta": [1990,2026], "Beetle": [1998,2019],
+    "Lancer": [1990,2017], "Mirage": [1991,2026], "Lancer EX": [2007,2017],
+    "Galant": [1990,2012], "XE": [2015,2026], "XF": [2007,2026],
+    "XJ": [1997,2019], "F-Type": [2013,2026],
+
+    "Hiace": [1990,2026], "KDH": [2004,2020],
+    "Hiace Grand Cabin": [2005,2026], "Estima": [1990,2019],
+    "Voxy": [2001,2026], "Noah": [2001,2026], "Caravan": [1990,2026],
+    "Vanette": [1990,2026], "Elgrand": [1997,2026], "Serena": [1991,2026],
+    "Every": [1990,2026], "APV": [2004,2020], "Grandis": [2003,2011],
+    "Delica": [1990,2026], "Outlander": [2005,2026], "Sprinter": [1995,2026],
+    "Vito": [1996,2026], "V-Class": [1996,2026],
+    "Transporter": [1990,2026], "Caddy": [1995,2026],
+    "Multivan": [2003,2026],
+
+    "Fortuner": [2005,2026], "RAV4": [1994,2026],
+    "Land Cruiser": [1990,2026], "Prado": [1990,2026],
+    "Rush": [2006,2026], "Harrier": [1997,2026], "CR-V": [1997,2026],
+    "Vezel": [2013,2026], "HR-V": [1999,2026], "BR-V": [2015,2026],
+    "Pilot": [2003,2026], "X-Trail": [2000,2026], "Juke": [2010,2019],
+    "Patrol": [1990,2026], "Terrano": [1993,2006],
+    "Pajero": [1990,2021], "Montero": [1990,2021], "ASX": [2010,2026],
+    "Sportage": [1995,2026], "Sorento": [2002,2026], "Seltos": [2019,2026],
+    "Tucson": [2004,2026], "Santa Fe": [2000,2026], "Creta": [2014,2026],
+    "Palisade": [2018,2026], "Defender": [1990,2026],
+    "Range Rover": [1990,2026], "Discovery": [1990,2026],
+    "Evoque": [2011,2026], "Velar": [2017,2026], "X1": [2009,2026],
+    "X3": [2003,2026], "X5": [1999,2026], "X6": [2008,2026],
+    "X7": [2018,2026], "Q3": [2011,2026], "Q5": [2008,2026],
+    "Q7": [2005,2026], "Q8": [2018,2026], "F-Pace": [2016,2026],
+    "E-Pace": [2017,2026], "I-Pace": [2018,2026],
+    "Wrangler": [1990,2026], "Cherokee": [1990,2026],
+    "Grand Cherokee": [1993,2026],
+
+    "Dio": [1990,2026], "Hornet": [1998,2026], "CBR 250": [2011,2026],
+    "Unicorn": [2004,2026], "Activa": [2000,2026], "CB350": [2020,2026],
+    "FZ": [2008,2026], "R15": [2008,2026], "MT-15": [2019,2026],
+    "Fazer": [2001,2020], "YZF-R1": [1998,2026], "Pulsar": [2001,2026],
+    "Dominar": [2016,2026], "Discover": [2004,2020], "Avenger": [2001,2026],
+    "Classic 350": [2009,2026], "Himalayan": [2016,2026],
+    "Meteor 350": [2020,2026], "Interceptor 650": [2018,2026],
+    "Gixxer": [2014,2026], "Access": [2007,2026],
+    "V-Strom": [2004,2026], "GSX-R": [1990,2026],
+    "Apache": [2005,2026], "Ntorq": [2018,2026], "Jupiter": [2013,2026],
+    "Duke 200": [2012,2026], "Duke 390": [2013,2026],
+    "Adventure 390": [2019,2026], "Ninja 400": [2018,2026],
+    "Z900": [2017,2026], "Versys 650": [2007,2026],
+
+    "N-Series": [1990,2026], "FRR": [1990,2026], "FTR": [1990,2026],
+    "Elf": [1990,2026], "LPT": [1990,2026], "Ace": [2005,2026],
+    "LPK": [1990,2026], "Xenon": [2007,2020], "Canter": [1990,2026],
+    "Fighter": [1990,2026], "FK": [1990,2026], "Quon": [2004,2026],
+    "Kuzer": [2016,2026], "MK": [1990,2026], "Comet": [2000,2026],
+    "Husky": [2000,2026], "Captain": [2010,2026], "Atego": [1998,2026],
+    "Actros": [1996,2026], "Arocs": [2013,2026],
+
+    "Coaster": [1990,2026], "Hiace Commuter": [1990,2026],
+    "Rosa": [1990,2026], "Aero": [1990,2026], "Fuso": [1990,2026],
+    "County": [1998,2026], "Universe": [2006,2026], "Solati": [2015,2026],
+    "Viking": [1990,2026], "Leopard": [1990,2026], "Sunbeam": [1990,2026],
+    "NQR Bus": [1990,2026], "FRR Bus": [1990,2026]
+};
+
+const vehicleServices = {
     "Corolla": [
-        { name: "Oil Change", description: "Engine oil replacement and basic inspection.", price: "Rs. 5,000", time: "1 Hour" },
-        { name: "Brake Service", description: "Brake inspection and brake pad checking.", price: "Rs. 8,500", time: "2 Hours" },
-        { name: "AC Service", description: "Air conditioning inspection and maintenance.", price: "Rs. 7,500", time: "2 Hours" },
-        { name: "Full Vehicle Service", description: "Complete vehicle inspection and maintenance.", price: "Rs. 25,000", time: "3 - 4 Hours" }
+        {name:"Oil Change",description:"Engine oil and filter replacement.",price:"Rs. 5,000",time:"1 Hour"},
+        {name:"Brake Service",description:"Complete brake inspection and service.",price:"Rs. 8,500",time:"2 Hours"},
+        {name:"AC Service",description:"Air conditioning inspection and maintenance.",price:"Rs. 7,500",time:"2 Hours"},
+        {name:"Full Vehicle Service",description:"Complete vehicle inspection and maintenance.",price:"Rs. 25,000",time:"3–4 Hours"}
     ],
-    "Wingroad": [
-        { name: "Engine Diagnostic", description: "Full engine OBD-II scan and tune-up.", price: "Rs. 6,500", time: "1.5 Hours" },
-        { name: "Oil Change", description: "Engine oil and filter replacement.", price: "Rs. 5,500", time: "1 Hour" },
-        { name: "Suspension Check", description: "Shock absorbers and suspension bush inspection.", price: "Rs. 9,500", time: "2.5 Hours" }
-    ],
+
     "Prius": [
-        { name: "Hybrid System Service", description: "Hybrid system inspection and maintenance.", price: "Rs. 18,000", time: "2 Hours" },
-        { name: "Oil Change", description: "Engine oil replacement and inspection.", price: "Rs. 5,500", time: "1 Hour" },
-        { name: "Brake Service", description: "Brake inspection and maintenance.", price: "Rs. 9,000", time: "2 Hours" }
+        {name:"Hybrid System Service",description:"Hybrid battery and hybrid system inspection.",price:"Rs. 18,000",time:"2 Hours"},
+        {name:"Oil Change",description:"Engine oil and filter replacement.",price:"Rs. 5,500",time:"1 Hour"},
+        {name:"Brake Service",description:"Brake inspection and maintenance.",price:"Rs. 9,000",time:"2 Hours"}
     ],
+
+    "Wingroad": [
+        {name:"Engine Diagnostic",description:"Complete engine diagnostic inspection.",price:"Rs. 6,500",time:"1.5 Hours"},
+        {name:"Oil Change",description:"Engine oil and filter replacement.",price:"Rs. 5,500",time:"1 Hour"},
+        {name:"Suspension Check",description:"Suspension system inspection.",price:"Rs. 9,500",time:"2.5 Hours"}
+    ],
+
     "Civic": [
-        { name: "Oil Change", description: "Engine oil replacement.", price: "Rs. 5,500", time: "1 Hour" },
-        { name: "Brake Service", description: "Brake inspection and maintenance.", price: "Rs. 9,000", time: "2 Hours" },
-        { name: "Engine Service", description: "Engine inspection and maintenance.", price: "Rs. 15,000", time: "3 Hours" }
+        {name:"Oil Change",description:"Engine oil replacement.",price:"Rs. 5,500",time:"1 Hour"},
+        {name:"Brake Service",description:"Brake inspection and maintenance.",price:"Rs. 9,000",time:"2 Hours"},
+        {name:"Engine Service",description:"Engine inspection and maintenance.",price:"Rs. 15,000",time:"3 Hours"}
     ],
+
     "Defender": [
-        { name: "Full 4x4 Service", description: "Complete off-road vehicle maintenance.", price: "Rs. 45,000", time: "5 Hours" },
-        { name: "Suspension & Chassis Check", description: "Heavy-duty suspension inspection.", price: "Rs. 15,000", time: "3 Hours" },
-        { name: "Tire Rotation & Alignment", description: "4x4 wheel alignment and tire rotation.", price: "Rs. 8,500", time: "1.5 Hours" }
+        {name:"Full 4x4 Service",description:"Complete off-road vehicle maintenance.",price:"Rs. 45,000",time:"5 Hours"},
+        {name:"Suspension & Chassis Check",description:"Heavy-duty suspension inspection.",price:"Rs. 15,000",time:"3 Hours"},
+        {name:"Tire Rotation & Alignment",description:"4x4 wheel alignment and tire rotation.",price:"Rs. 8,500",time:"1.5 Hours"}
     ],
+
     "Range Rover": [
-        { name: "Full Service", description: "Complete luxury SUV maintenance.", price: "Rs. 50,000", time: "5 Hours" },
-        { name: "Air Suspension Diagnostic", description: "Air suspension system calibration and check.", price: "Rs. 18,500", time: "3 Hours" },
-        { name: "AC Service", description: "Climate control inspection and refrigerant top-up.", price: "Rs. 12,000", time: "2 Hours" }
+        {name:"Full Service",description:"Complete luxury SUV maintenance.",price:"Rs. 50,000",time:"5 Hours"},
+        {name:"Air Suspension Diagnostic",description:"Air suspension system inspection.",price:"Rs. 18,500",time:"3 Hours"},
+        {name:"AC Service",description:"Climate control inspection and maintenance.",price:"Rs. 12,000",time:"2 Hours"}
     ]
 };
 
-// --- DEFAULT SERVICE PACKAGE ---
-// If a model is not in the 'services' object above, show these standard services.
-// This guarantees the customer always has options (like changing tires).
 const defaultServices = [
-    { name: "Tire Replacement (Set of 4)", description: "Removal of old tires and installation of new tires, including balancing.", price: "Rs. 35,000", time: "2 Hours" },
-    { name: "Wheel Alignment & Balancing", description: "Computerized alignment and wheel balancing for smooth driving.", price: "Rs. 5,500", time: "1.5 Hours" },
-    { name: "Oil & Filter Change", description: "Standard engine oil replacement and filter change.", price: "Rs. 7,500", time: "1 Hour" },
-    { name: "Brake Inspection & Service", description: "Brake pad inspection, cleaning, and fluid top-up.", price: "Rs. 10,000", time: "2 Hours" },
-    { name: "Full Diagnostic & Inspection", description: "Complete vehicle health check and OBD-II computer scan.", price: "Rs. 8,000", time: "2 Hours" },
-    { name: "Battery & Electrical Check", description: "Battery health, alternator, and starter motor inspection.", price: "Rs. 4,500", time: "1 Hour" }
+    {name:"Tire Replacement (Set of 4)",description:"Removal of old tires and installation of new tires, including balancing.",price:"Rs. 35,000",time:"2 Hours"},
+    {name:"Wheel Alignment & Balancing",description:"Computerized wheel alignment and balancing.",price:"Rs. 5,500",time:"1.5 Hours"},
+    {name:"Oil & Filter Change",description:"Standard engine oil and filter replacement.",price:"Rs. 7,500",time:"1 Hour"},
+    {name:"Brake Inspection & Service",description:"Brake inspection, cleaning and maintenance.",price:"Rs. 10,000",time:"2 Hours"},
+    {name:"Full Diagnostic & Inspection",description:"Complete vehicle health check and diagnostic scan.",price:"Rs. 8,000",time:"2 Hours"},
+    {name:"Battery & Electrical Check",description:"Battery, alternator and electrical system inspection.",price:"Rs. 4,500",time:"1 Hour"},
+    {name:"Vehicle Paint & Body",description:"Vehicle body repair and paint service.",price:"Rs. 35,000",time:"1–2 Days"},
+    {name:"Full Body Repaint",description:"Complete exterior vehicle repainting service.",price:"Rs. 85,000",time:"3–5 Days"}
 ];
 
-
-// --- LOGIC: POPULATE DROPDOWNS ---
-
-// 1. Populate Vehicle Type (Already done in HTML)
-
-// 2. When Type changes, populate Makes
-vehicleType.addEventListener("change", function () {
+vehicleType.addEventListener("change", function() {
     const type = vehicleType.value;
+
     vehicleMake.innerHTML = '<option value="">-- Select Make --</option>';
     vehicleModel.innerHTML = '<option value="">-- Select Model --</option>';
     vehicleYear.innerHTML = '<option value="">-- Select Year --</option>';
-    
     serviceResults.innerHTML = "";
     checkoutSection.classList.add("hidden");
 
-    if (type) {
-        const makes = Object.keys(vehicleDatabase[type]);
-        makes.forEach(make => {
-            vehicleMake.innerHTML += `<option value="${make}">${make}</option>`;
-        });
-        vehicleMake.disabled = false;
-        vehicleModel.disabled = true;
-        vehicleYear.disabled = true;
-        findBtn.disabled = true;
-    } else {
-        vehicleMake.disabled = true;
-        vehicleModel.disabled = true;
-        vehicleYear.disabled = true;
-        findBtn.disabled = true;
-    }
+    vehicleMake.disabled = true;
+    vehicleModel.disabled = true;
+    vehicleYear.disabled = true;
+    findBtn.disabled = true;
+
+    if (!type) return;
+    if (!vehicleDatabase[type]) return;
+
+    const makes = Object.keys(vehicleDatabase[type]);
+
+    makes.forEach(function(make) {
+        vehicleMake.innerHTML += `<option value="${make}">${make}</option>`;
+    });
+
+    vehicleMake.disabled = false;
 });
 
-// 3. When Make changes, populate Models
-vehicleMake.addEventListener("change", function () {
+vehicleMake.addEventListener("change", function() {
     const type = vehicleType.value;
     const make = vehicleMake.value;
-    
+
     vehicleModel.innerHTML = '<option value="">-- Select Model --</option>';
     vehicleYear.innerHTML = '<option value="">-- Select Year --</option>';
     serviceResults.innerHTML = "";
     checkoutSection.classList.add("hidden");
 
-    if (make) {
-        const models = vehicleDatabase[type][make];
-        models.forEach(model => {
-            vehicleModel.innerHTML += `<option value="${model}">${model}</option>`;
-        });
-        vehicleModel.disabled = false;
-        vehicleYear.disabled = true;
-        findBtn.disabled = true;
-    } else {
-        vehicleModel.disabled = true;
-        vehicleYear.disabled = true;
-        findBtn.disabled = true;
-    }
+    vehicleModel.disabled = true;
+    vehicleYear.disabled = true;
+    findBtn.disabled = true;
+
+    if (!type || !make) return;
+
+    if (!vehicleDatabase[type] || !vehicleDatabase[type][make]) return;
+
+    const models = vehicleDatabase[type][make];
+
+    models.forEach(function(model) {
+        vehicleModel.innerHTML += `<option value="${model}">${model}</option>`;
+    });
+
+    vehicleModel.disabled = false;
 });
 
-// 4. When Model changes, populate Years (1990 to Current Year)
-vehicleModel.addEventListener("change", function () {
-    const currentYear = new Date().getFullYear();
+vehicleModel.addEventListener("change", function() {
+    const model = vehicleModel.value;
+
     vehicleYear.innerHTML = '<option value="">-- Select Year --</option>';
     serviceResults.innerHTML = "";
     checkoutSection.classList.add("hidden");
+    findBtn.disabled = true;
+    vehicleYear.disabled = true;
 
-    if (vehicleModel.value) {
-        for (let y = currentYear; y >= 1990; y--) {
-            vehicleYear.innerHTML += `<option value="${y}">${y}</option>`;
+    if (!model) return;
+
+    const range = yearRanges[model];
+
+    if (!range) {
+        const currentYear = new Date().getFullYear();
+
+        for (let year = currentYear; year >= 1990; year--) {
+            vehicleYear.innerHTML += `<option value="${year}">${year}</option>`;
         }
-        vehicleYear.disabled = false;
-        findBtn.disabled = true;
     } else {
-        vehicleYear.disabled = true;
-        findBtn.disabled = true;
+        const startYear = range[0];
+        const endYear = range[1];
+
+        for (let year = endYear; year >= startYear; year--) {
+            vehicleYear.innerHTML += `<option value="${year}">${year}</option>`;
+        }
     }
+
+    vehicleYear.disabled = false;
 });
 
-// 5. When Year is selected, enable Find button
 vehicleYear.addEventListener("change", function() {
     if (vehicleYear.value) {
         findBtn.disabled = false;
@@ -203,141 +296,156 @@ vehicleYear.addEventListener("change", function() {
     }
 });
 
-// FILTER SERVICES (NOW DYNAMIC FROM DATABASE)
-async function filterServices() {
+window.filterServices = function() {
+    const type = vehicleType.value;
+    const make = vehicleMake.value;
     const model = vehicleModel.value;
     const year = vehicleYear.value;
-    const make = vehicleMake.value;
-    const type = vehicleType.value;
 
-    serviceResults.innerHTML = "";
-    checkoutSection.classList.add("hidden");
-    selectedService = null;
-
-    if (!model || !year) {
-        serviceResults.innerHTML = `<div class="message">Please select all vehicle details first.</div>`;
+    if (!type || !make || !model || !year) {
+        alert("Please select Vehicle Type, Make, Model and Year.");
         return;
     }
 
+    serviceResults.innerHTML = "";
+    checkoutSection.classList.add("hidden");
+
+    const selectedServices = vehicleServices[model] || defaultServices;
     const displayName = `${year} ${make} ${model}`;
-    serviceResults.innerHTML = `<h2 class="result-title">Available Services for ${displayName}</h2><div class="message">Loading services...</div>`;
 
-    // Fetch services from the database based on vehicle type
-    try {
-        const response = await fetch(`api_get_services.php?type=${type}`);
-        const selectedServices = await response.json();
+    serviceResults.innerHTML = `
+        <h2 class="result-title">
+            Available Services for ${displayName}
+        </h2>
+    `;
 
-        if (selectedServices.length === 0) {
-            serviceResults.innerHTML = `
-                <h2 class="result-title">Available Services for ${displayName}</h2>
-                <div class="message">
-                    Specific service packages for this vehicle type are not listed yet. <br>
-                    Please contact our service desk for a custom quote and inspection.
+    selectedServices.forEach(function(service, index) {
+        serviceResults.innerHTML += `
+            <div class="service-card" id="card-${index}" onclick="selectService(${index})">
+                <div class="service-info">
+                    <h3>${service.name}</h3>
+                    <p>${service.description}</p>
+                    <p>
+                        <strong>Estimated Time:</strong>
+                        ${service.time}
+                    </p>
                 </div>
-            `;
-            return;
+
+                <div class="price-section">
+                    <p class="price-label">Estimated Price</p>
+                    <p class="price">${service.price}</p>
+                    <button
+                        class="book-button"
+                        type="button"
+                        onclick="event.stopPropagation(); selectService(${index});"
+                    >
+                        Select Service
+                    </button>
+                </div>
+            </div>
+        `;
+
+        const card = document.getElementById(`card-${index}`);
+
+        if (card) {
+            card.dataset.name = service.name;
+            card.dataset.price = service.price;
+            card.dataset.time = service.time;
         }
-
-        serviceResults.innerHTML = `<h2 class="result-title">Available Services for ${displayName}</h2>`;
-
-        selectedServices.forEach(function(service, index) {
-            serviceResults.innerHTML += `
-                <div class="service-card" id="card-${index}" onclick="selectService(${index})">
-                    <div class="service-info">
-                        <h3>${service.service_name}</h3>
-                        <p>${service.description}</p>
-                        <p><strong>Estimated Time:</strong> ${service.time}</p>
-                    </div>
-                    <div class="price-section">
-                        <p class="price-label">Estimated Price</p>
-                        <p class="price">${service.price}</p>
-                        <button class="book-button" type="button" onclick="event.stopPropagation(); selectService(${index})">
-                            Select Service
-                        </button>
-                    </div>
-                </div>
-            `;
-            
-            // Attach service data to the card element
-            const card = document.getElementById(`card-${index}`);
-            if (card) {
-                card.dataset.name = service.service_name;
-                card.dataset.price = service.price;
-                card.dataset.time = service.time;
-            }
-        });
-    } catch (error) {
-        serviceResults.innerHTML = `<div class="message">Error loading services. Please try again.</div>`;
-        console.error("Fetch error:", error);
-    }
-}
-
-// --- LOGIC: SELECT SERVICE & UPDATE CHECKOUT ---
-function selectService(index) {
-    document.querySelectorAll('.service-card').forEach(card => {
-        card.classList.remove('selected');
     });
 
+    serviceResults.style.display = "block";
+
+    serviceResults.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+    });
+};
+
+window.selectService = function(index) {
     const selectedCard = document.getElementById(`card-${index}`);
-    selectedCard.classList.add('selected');
-    
-    document.querySelectorAll('.book-button').forEach(btn => {
-        btn.innerText = "Select Service";
-    });
-    selectedCard.querySelector('.book-button').innerText = "Selected ✓";
 
-    // Update summary data to include Year, Make, and Model
+    if (!selectedCard) {
+        console.error("Service card not found: card-" + index);
+        return;
+    }
+
+    document.querySelectorAll(".service-card").forEach(function(card) {
+        card.classList.remove("selected");
+    });
+
+    selectedCard.classList.add("selected");
+
+    document.querySelectorAll(".book-button").forEach(function(button) {
+        button.innerText = "Select Service";
+    });
+
+    const selectedButton = selectedCard.querySelector(".book-button");
+
+    if (selectedButton) {
+        selectedButton.innerText = "Selected ✓";
+    }
+
     const year = vehicleYear.value;
     const make = vehicleMake.value;
     const model = vehicleModel.value;
     const fullVehicleName = `${year} ${make} ${model}`;
 
-    document.getElementById('summaryVehicle').innerText = fullVehicleName;
-    document.getElementById('summaryService').innerText = selectedCard.dataset.name;
-    document.getElementById('summaryTime').innerText = selectedCard.dataset.time;
-    document.getElementById('summaryPrice').innerText = selectedCard.dataset.price;
+    const summaryVehicle = document.getElementById("summaryVehicle");
+    const summaryService = document.getElementById("summaryService");
+    const summaryTime = document.getElementById("summaryTime");
+    const summaryPrice = document.getElementById("summaryPrice");
 
-    checkoutSection.classList.remove('hidden');
-    checkoutSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
-}
+    if (summaryVehicle) {
+        summaryVehicle.innerText = fullVehicleName;
+    }
 
-function proceedToPayment() {
-    alert("Redirecting to secure payment gateway... (Demo)");
-    // window.location.href = '/payment-gateway';
-}
+    if (summaryService) {
+        summaryService.innerText = selectedCard.dataset.name;
+    }
 
-// --- LOGIC: PROCEED TO PAYMENT (UPDATED) ---
-function proceedToPayment() {
-    // Grab the data from the summary box
-    const vehicle = document.getElementById('summaryVehicle').innerText;
-    const service = document.getElementById('summaryService').innerText;
-    const time = document.getElementById('summaryTime').innerText;
-    const price = document.getElementById('summaryPrice').innerText;
+    if (summaryTime) {
+        summaryTime.innerText = selectedCard.dataset.time;
+    }
 
-    // Save the data to sessionStorage to pass it to the next page
-    const orderDetails = {
-        vehicle: vehicle,
-        service: service,
-        time: time,
-        price: price
-    };
-    sessionStorage.setItem('orderDetails', JSON.stringify(orderDetails));
+    if (summaryPrice) {
+        summaryPrice.innerText = selectedCard.dataset.price;
+    }
 
-    // Redirect to the Invoice/Billing page
-    window.location.href = "../invoice/invoice.html";
-}
+    checkoutSection.classList.remove("hidden");
 
-// --- LOGIC: PROCEED TO PAYMENT ---
-function proceedToPayment() {
-    const vehicle = document.getElementById('summaryVehicle').innerText;
-    const service = document.getElementById('summaryService').innerText;
-    const time = document.getElementById('summaryTime').innerText;
-    const price = document.getElementById('summaryPrice').innerText;
+    checkoutSection.scrollIntoView({
+        behavior: "smooth",
+        block: "center"
+    });
+};
 
-    // Send booking data to PHP to save in MySQL
-    fetch('../invoice/save_booking.php', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+window.proceedToPayment = function() {
+    const vehicleElement = document.getElementById("summaryVehicle");
+    const serviceElement = document.getElementById("summaryService");
+    const timeElement = document.getElementById("summaryTime");
+    const priceElement = document.getElementById("summaryPrice");
+
+    if (!vehicleElement || !serviceElement || !timeElement || !priceElement) {
+        alert("Order information could not be found.");
+        return;
+    }
+
+    const vehicle = vehicleElement.innerText;
+    const service = serviceElement.innerText;
+    const time = timeElement.innerText;
+    const price = priceElement.innerText;
+
+    if (!vehicle || vehicle === "N/A" || !service || service === "N/A") {
+        alert("Please select a service first.");
+        return;
+    }
+
+    fetch("../invoice/save_booking.php", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
         body: JSON.stringify({
             vehicle: vehicle,
             service: service,
@@ -345,17 +453,18 @@ function proceedToPayment() {
             price: price
         })
     })
-    .then(res => res.json())
-    .then(data => {
+    .then(function(response) {
+        return response.json();
+    })
+    .then(function(data) {
         if (data.success) {
-            // Booking saved! Redirect to invoice page and pass the ID in the URL
             window.location.href = `../invoice/invoice.php?id=${data.booking_id}`;
         } else {
-            alert('Error saving booking: ' + data.message);
+            alert("Error saving booking: " + data.message);
         }
     })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('Network error while saving booking.');
+    .catch(function(error) {
+        console.error("Booking error:", error);
+        alert("Network error while saving booking.");
     });
-}
+};
