@@ -203,49 +203,73 @@ vehicleYear.addEventListener("change", function() {
     }
 });
 
-// --- LOGIC: FIND SERVICES ---
-function filterServices() {
+// FILTER SERVICES (NOW DYNAMIC FROM DATABASE)
+async function filterServices() {
     const model = vehicleModel.value;
     const year = vehicleYear.value;
     const make = vehicleMake.value;
+    const type = vehicleType.value;
 
     serviceResults.innerHTML = "";
     checkoutSection.classList.add("hidden");
+    selectedService = null;
 
     if (!model || !year) {
         serviceResults.innerHTML = `<div class="message">Please select all vehicle details first.</div>`;
         return;
     }
 
-    // Check if we have specific services for this model
-    // If not, use the defaultServices array so the user always has options (like tire changes)
-    const selectedServices = services[model] || defaultServices;
     const displayName = `${year} ${make} ${model}`;
+    serviceResults.innerHTML = `<h2 class="result-title">Available Services for ${displayName}</h2><div class="message">Loading services...</div>`;
 
-    serviceResults.innerHTML = `<h2 class="result-title">Available Services for ${displayName}</h2>`;
+    // Fetch services from the database based on vehicle type
+    try {
+        const response = await fetch(`api_get_services.php?type=${type}`);
+        const selectedServices = await response.json();
 
-    selectedServices.forEach(function(service, index) {
-        serviceResults.innerHTML += `
-            <div class="service-card" id="card-${index}" onclick="selectService(${index})">
-                <div class="service-info">
-                    <h3>${service.name}</h3>
-                    <p>${service.description}</p>
-                    <p><strong>Estimated Time:</strong> ${service.time}</p>
+        if (selectedServices.length === 0) {
+            serviceResults.innerHTML = `
+                <h2 class="result-title">Available Services for ${displayName}</h2>
+                <div class="message">
+                    Specific service packages for this vehicle type are not listed yet. <br>
+                    Please contact our service desk for a custom quote and inspection.
                 </div>
-                <div class="price-section">
-                    <p class="price-label">Estimated Price</p>
-                    <p class="price">${service.price}</p>
-                    <button class="book-button" type="button" onclick="event.stopPropagation(); selectService(${index})">
-                        Select Service
-                    </button>
+            `;
+            return;
+        }
+
+        serviceResults.innerHTML = `<h2 class="result-title">Available Services for ${displayName}</h2>`;
+
+        selectedServices.forEach(function(service, index) {
+            serviceResults.innerHTML += `
+                <div class="service-card" id="card-${index}" onclick="selectService(${index})">
+                    <div class="service-info">
+                        <h3>${service.service_name}</h3>
+                        <p>${service.description}</p>
+                        <p><strong>Estimated Time:</strong> ${service.time}</p>
+                    </div>
+                    <div class="price-section">
+                        <p class="price-label">Estimated Price</p>
+                        <p class="price">${service.price}</p>
+                        <button class="book-button" type="button" onclick="event.stopPropagation(); selectService(${index})">
+                            Select Service
+                        </button>
+                    </div>
                 </div>
-            </div>
-        `;
-        
-        document.getElementById(`card-${index}`).dataset.name = service.name;
-        document.getElementById(`card-${index}`).dataset.price = service.price;
-        document.getElementById(`card-${index}`).dataset.time = service.time;
-    });
+            `;
+            
+            // Attach service data to the card element
+            const card = document.getElementById(`card-${index}`);
+            if (card) {
+                card.dataset.name = service.service_name;
+                card.dataset.price = service.price;
+                card.dataset.time = service.time;
+            }
+        });
+    } catch (error) {
+        serviceResults.innerHTML = `<div class="message">Error loading services. Please try again.</div>`;
+        console.error("Fetch error:", error);
+    }
 }
 
 // --- LOGIC: SELECT SERVICE & UPDATE CHECKOUT ---
