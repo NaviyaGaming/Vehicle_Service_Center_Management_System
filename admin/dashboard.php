@@ -1,9 +1,4 @@
 <?php
-// Turn on error reporting temporarily to see if any errors exist
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-
 session_start();
 require_once '../db_connect.php';
 
@@ -103,6 +98,12 @@ foreach ($allBookings as $b) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard | TorquePoint</title>
+    <!-- Prevent Flash of Incorrect Theme (FOUC) -->
+    <script>
+        if (localStorage.getItem('theme') === 'dark') {
+            document.documentElement.setAttribute('data-theme', 'dark');
+        }
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -115,8 +116,21 @@ foreach ($allBookings as $b) {
             --text-main: #0F172A; --text-muted: #64748B; --success: #10B981; --warning: #F59E0B;
             --danger: #EF4444; --border-color: #E2E8F0;
         }
+        /* ===== DARK MODE VARIABLES ===== */
+        [data-theme="dark"] {
+            --primary: #3b82f6;          /* Lighter blue for dark contrast */
+            --primary-hover: #2563eb;
+            --bg-main: #0F172A;          /* Slate 900 */
+            --surface: #1E293B;          /* Slate 800 */
+            --text-main: #F8FAFC;        /* Slate 50 */
+            --text-muted: #94A3B8;       /* Slate 400 */
+            --success: #10B981;
+            --warning: #F59E0B;
+            --danger: #EF4444;
+            --border-color: #334155;     /* Slate 700 */
+        }
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg-main); color: var(--text-main); min-height: 100vh; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg-main); color: var(--text-main); min-height: 100vh; transition: background 0.3s ease, color 0.3s ease; }
 
         .top-header { width: 100%; padding: 20px 6%; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); background: var(--surface); box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
         .brand { display: flex; align-items: center; gap: 12px; text-decoration: none; color: inherit; }
@@ -124,6 +138,8 @@ foreach ($allBookings as $b) {
         .brand-text h2 { font-family: 'Montserrat', sans-serif; font-size: 24px; font-weight: 700; }
         .brand-text h2 span { color: var(--primary); }
         .header-actions { display: flex; align-items: center; gap: 16px; }
+        .theme-toggle { background: none; border: 1px solid var(--border-color); color: var(--text-muted); cursor: pointer; font-size: 16px; padding: 8px 10px; border-radius: 8px; transition: 0.2s; }
+        .theme-toggle:hover { border-color: var(--primary); color: var(--primary); }
         .admin-badge { background: rgba(0, 82, 204, 0.1); color: var(--primary); padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
         .user-info { display: flex; align-items: center; gap: 8px; color: var(--text-muted); font-size: 14px; font-weight: 500; }
         .btn-logout { color: var(--danger); text-decoration: none; font-weight: 600; font-size: 14px; }
@@ -161,11 +177,11 @@ foreach ($allBookings as $b) {
         /* ===== Search & Filter Bar ===== */
         .toolbar { background: var(--surface); border: 1px solid var(--border-color); border-radius: 8px; padding: 16px; margin-bottom: 24px; display: flex; gap: 16px; align-items: center; flex-wrap: wrap; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
         .toolbar form { display: flex; gap: 12px; flex-grow: 1; align-items: center; flex-wrap: wrap; }
-        .input-search { flex-grow: 1; min-width: 200px; padding: 10px 16px; border: 1px solid var(--border-color); border-radius: 6px; font-family: 'Inter', sans-serif; font-size: 14px; }
+        .input-search { flex-grow: 1; min-width: 200px; padding: 10px 16px; border: 1px solid var(--border-color); border-radius: 6px; font-family: 'Inter', sans-serif; font-size: 14px; background: var(--bg-main); color: var(--text-main); }
         .input-search:focus { outline: none; border-color: var(--primary); }
-        .select-status { padding: 10px 16px; border: 1px solid var(--border-color); border-radius: 6px; font-family: 'Inter', sans-serif; font-size: 14px; background: var(--surface); cursor: pointer; }
+        .select-status { padding: 10px 16px; border: 1px solid var(--border-color); border-radius: 6px; font-family: 'Inter', sans-serif; font-size: 14px; background: var(--surface); color: var(--text-main); cursor: pointer; }
         .btn-filter { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: 600; cursor: pointer; }
-        .btn-export { background: var(--text-main); color: white; text-decoration: none; padding: 10px 20px; border-radius: 6px; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; }
+        .btn-export { background: var(--text-main); color: var(--bg-main); text-decoration: none; padding: 10px 20px; border-radius: 6px; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; }
         .btn-export:hover { opacity: 0.9; }
 
         .table-card { background: var(--surface); border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
@@ -173,10 +189,10 @@ foreach ($allBookings as $b) {
         .data-table th { text-align: left; padding: 16px 24px; background: var(--bg-main); color: var(--text-muted); font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border-color); }
         .data-table td { padding: 20px 24px; font-size: 14px; color: var(--text-main); border-bottom: 1px solid var(--border-color); }
         .data-table tr:last-child td { border-bottom: none; }
-        .data-table tr:hover td { background: #FCFCFD; }
+        .data-table tr:hover td { background: var(--bg-main); }
         .id-mono { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--text-muted); }
         .text-muted { color: var(--text-muted); font-size: 13px; }
-        .btn-view { background: transparent; color: var(--primary); border: 1px solid var(--border-color); padding: 8px 14px; border-radius: 6px; text-decoration: none; font-size: 13px; font-weight: 600; transition: 0.2s; }
+        .btn-view { background: transparent; color: var(--primary); border: 1px solid var(--border-color); padding: 8px 14px; border-radius: 6px; text-decoration: none; font-size: 13px; font-weight: 600; transition: 0.2s; display: inline-block; }
         .btn-view:hover { background: var(--bg-main); border-color: var(--primary); }
 
         .mechanic-badge { background: rgba(0, 82, 204, 0.1); color: var(--primary); padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; }
@@ -196,6 +212,9 @@ foreach ($allBookings as $b) {
             <div class="brand-text"><h2>Torque<span>Point</span> Admin</h2></div>
         </a>
         <div class="header-actions">
+            <button id="theme-toggle" class="theme-toggle">
+                <i class="fa-solid fa-moon" id="theme-icon"></i>
+            </button>
             <span class="admin-badge"><i class="fa-solid fa-shield-halved"></i> Administrator</span>
             <div class="user-info"><i class="fa-solid fa-user-tie"></i> <?php echo htmlspecialchars($_SESSION['user_email']); ?></div>
             <a href="../services/logout.php" class="btn-logout">Logout</a>
@@ -365,7 +384,7 @@ foreach ($allBookings as $b) {
                 datasets: [{
                     data: <?php echo json_encode($chartServiceData); ?>,
                     backgroundColor: colorPalette,
-                    borderWidth: 2, borderColor: '#FFFFFF'
+                    borderWidth: 2, borderColor: 'transparent'
                 }]
             },
             options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, padding: 15, font: { size: 11 } } } } }
@@ -382,7 +401,7 @@ foreach ($allBookings as $b) {
             .then(data => {
                 if (data.success) { 
                     alert(data.message); 
-                    location.reload(); // Reload to update mechanic widget immediately
+                    location.reload(); 
                 } else { 
                     alert('Error: ' + data.message); 
                     location.reload(); 
@@ -390,6 +409,31 @@ foreach ($allBookings as $b) {
             })
             .catch(error => console.error('Error:', error));
         }
+
+        // ===== DARK MODE LOGIC =====
+        const themeToggle = document.getElementById('theme-toggle');
+        const themeIcon = document.getElementById('theme-icon');
+        const htmlElement = document.documentElement;
+
+        // Check saved preference on load
+        if (localStorage.getItem('theme') === 'dark') {
+            themeIcon.classList.remove('fa-moon');
+            themeIcon.classList.add('fa-sun');
+        }
+
+        themeToggle.addEventListener('click', () => {
+            if (htmlElement.getAttribute('data-theme') === 'dark') {
+                htmlElement.removeAttribute('data-theme');
+                localStorage.setItem('theme', 'light');
+                themeIcon.classList.remove('fa-sun');
+                themeIcon.classList.add('fa-moon');
+            } else {
+                htmlElement.setAttribute('data-theme', 'dark');
+                localStorage.setItem('theme', 'dark');
+                themeIcon.classList.remove('fa-moon');
+                themeIcon.classList.add('fa-sun');
+            }
+        });
     </script>
 </body>
 </html>
