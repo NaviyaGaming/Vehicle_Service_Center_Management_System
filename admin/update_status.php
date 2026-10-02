@@ -55,7 +55,6 @@ if ($user['role'] === 'mechanic') {
         exit;
     }
 }
-
 // 3. MECHANIC ASSIGNMENT LOGIC
 
 // If starting a job, assign a mechanic
@@ -87,15 +86,13 @@ elseif ($new_status === 'Ready for Pickup' || $new_status === 'Completed') {
     $stmt->execute([$booking_id]);
     $booking = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    if ($booking && $booking['assigned_mechanic_id']) {
+    if ($booking && !empty($booking['assigned_mechanic_id'])) {
         // Free up the mechanic
         $pdo->prepare("UPDATE mechanics SET is_available = 1 WHERE id = ?")->execute([$booking['assigned_mechanic_id']]);
-        // Unassign them from the booking (so they don't get freed twice)
-        $pdo->prepare("UPDATE bookings SET assigned_mechanic_id = NULL WHERE id = ?")->execute([$booking_id]);
     }
     
-    // Update booking status
-    $updateStmt = $pdo->prepare("UPDATE bookings SET status = ? WHERE id = ?");
+    // Update booking status AND clear the assigned mechanic in one clean query (Fixes the stuck name!)
+    $updateStmt = $pdo->prepare("UPDATE bookings SET status = ?, assigned_mechanic_id = NULL WHERE id = ?");
     $updateStmt->execute([$new_status, $booking_id]);
     
     $alert_message = "Status updated to '$new_status'. Mechanic is now available for the next vehicle.";
