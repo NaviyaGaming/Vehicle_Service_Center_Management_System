@@ -27,7 +27,7 @@ if (!$user || ($user['is_admin'] != 1 && $user['role'] !== 'mechanic')) {
     exit;
 }
 
-// 2. Get data from JavaScript (THIS WAS THE MISSING PIECE!)
+// 2. Get data from JavaScript
  $input = json_decode(file_get_contents('php://input'), true);
  $booking_id = $input['booking_id'] ?? 0;
  $new_status = $input['new_status'] ?? '';
@@ -108,11 +108,57 @@ else {
     $alert_message = "Status updated to '$new_status'.";
 }
 
-// 4. Email Notification Logic (Exclude 'Completed' and 'Paid')
+// 4. EMAIL NOTIFICATION LOGIC 
+
+// A. "Completed" -> Send Thank You & Rating Email
+if ($new_status === 'Completed') {
+    $stmt = $pdo->prepare("SELECT b.vehicle_details, b.user_email, u.name FROM bookings b JOIN users u ON b.user_email = u.email WHERE b.id = ?");
+    $stmt->execute([$booking_id]);
+    $details = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if ($details) {
+        $user_name = $details['name'] ?? 'Valued Customer';
+        $user_email = $details['user_email'];
+        
+        $mail = new PHPMailer(true);
+        try {
+            $mail->isSMTP();
+            $mail->Host = 'smtp.gmail.com';
+            $mail->SMTPAuth = true;
+            $mail->Username = 'pointtorque@gmail.com'; 
+            $mail->Password = 'vfsz hneu wgcb bysp';       
+            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+            $mail->Port = 587;
+
+            $mail->setFrom('pointtorque@gmail.com', 'TorquePoint Service Center');
+            $mail->addAddress($user_email); 
+            
+            $rating_link = "http://localhost/groupProject/services/rate.php?id=" . $booking_id;
+            
+            $mail->isHTML(true);
+            $mail->Subject = "Thank you for choosing TorquePoint!";
+            $mail->Body = "
+                <h2>Thank you, $user_name!</h2>
+                <p>We hope you are satisfied with the service provided for your {$details['vehicle_details']}. It was a pleasure having you at TorquePoint.</p>
+                <p>We would love to hear your feedback! Please take a moment to rate your experience with us:</p>
+                <p style='margin-top: 20px;'>
+                    <a href='$rating_link' style='background-color: #0052CC; color: #FFFFFF; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: 600; font-family: Inter, sans-serif;'>
+                        Rate Our Service
+                    </a>
+                </p>
+                <p>Best Regards,<br>TorquePoint Team</p>
+            ";
+            $mail->send();
+        } catch (Exception $e) {
+            error_log("Completion email failed: {$mail->ErrorInfo}");
+        }
+    }
+}
+
+// B. Other Statuses -> Send standard update emails
  $notify_stages = ['Vehicle Received', 'Awaiting Parts', 'In Progress', 'Ready for Pickup'];
 
 if (in_array($new_status, $notify_stages)) {
-    // Fetch booking details and user email
     $stmt = $pdo->prepare("SELECT b.vehicle_details, b.user_email FROM bookings b WHERE b.id = ?");
     $stmt->execute([$booking_id]);
     $details = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -121,7 +167,6 @@ if (in_array($new_status, $notify_stages)) {
         $vehicle = $details['vehicle_details'];
         $user_email = $details['user_email'];
 
-        // Custom message for each stage
         $messages = [
             'Vehicle Received' => "Your $vehicle has been received at our service center. We will begin work soon!",
             'Awaiting Parts' => "We are currently awaiting parts for your $vehicle. We will notify you when work resumes.",
@@ -130,7 +175,6 @@ if (in_array($new_status, $notify_stages)) {
         ];
         $email_body = $messages[$new_status];
 
-        // Send Email via PHPMailer
         $mail = new PHPMailer(true);
         try {
             $mail->isSMTP();
@@ -155,7 +199,6 @@ if (in_array($new_status, $notify_stages)) {
             ";
             $mail->send();
         } catch (Exception $e) {
-            // Log error but don't break the status update
             error_log("Status update email failed: {$mail->ErrorInfo}");
         }
     }
