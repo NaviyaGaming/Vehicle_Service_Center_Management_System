@@ -42,6 +42,7 @@ if (strpos($name, ' ') !== false) {
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <link rel="icon" type="image/png" href="../logo.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Profile | TorquePoint</title>
@@ -182,8 +183,14 @@ if (strpos($name, ' ') !== false) {
         }
 
         // Handle Profile Update (when Save Changes is clicked)
-        document.getElementById('profileForm').addEventListener('submit', function(e) {
-            e.preventDefault();
+document.getElementById('profileForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const btn = document.getElementById('btnContainer').querySelector('button[type="submit"]');
+    if (btn) {
+        btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Saving...';
+        btn.disabled = true;
+    }
+    // ... leave the rest of your fetch code exactly as it is ...
             fetch('update_profile.php?action=update_profile', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },

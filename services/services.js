@@ -421,6 +421,12 @@ window.selectService = function(index) {
 };
 
 window.proceedToPayment = function() {
+    const payBtn = document.querySelector('.btn-pay');
+    payBtn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Processing...';
+    payBtn.disabled = true;
+    payBtn.style.opacity = '0.7'; // Make it look faded
+    
+    // ... leave the rest of your fetch code exactly as it is ...
     const vehicleElement = document.getElementById("summaryVehicle");
     const serviceElement = document.getElementById("summaryService");
     const timeElement = document.getElementById("summaryTime");

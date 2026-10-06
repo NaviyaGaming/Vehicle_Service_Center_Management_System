@@ -12,6 +12,7 @@ if (!isset($_SESSION['user_email'])) {
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <link rel="icon" type="image/png" href="../logo.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TorquePoint | Vehicle Service Management System</title>
@@ -25,6 +26,7 @@ if (!isset($_SESSION['user_email'])) {
 
     <!-- HEADER -->
     <header class="top-header">
+    
         <a href="../home/home.php" class="brand" style="text-decoration: none; color: inherit;">
             <div class="brand-icon">
                 <img src="../logo.png" alt="Logo" class="brand-logo-img" onerror="this.style.display='none'">
