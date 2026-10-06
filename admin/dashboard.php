@@ -89,6 +89,13 @@ foreach ($allBookings as $b) {
  $mechanics = $pdo->query("SELECT * FROM mechanics ORDER BY id ASC")->fetchAll(PDO::FETCH_ASSOC);
  $availableMechanics = count(array_filter($mechanics, fn($m) => $m['is_available'] == 1));
 
+// Fetch Customer Ratings
+ $ratings = $pdo->query("SELECT r.rating, r.review, r.created_at, b.vehicle_details, b.service_name, u.name 
+                        FROM ratings r 
+                        JOIN bookings b ON r.booking_id = b.id 
+                        JOIN users u ON r.user_email = u.email 
+                        ORDER BY r.created_at DESC LIMIT 5")->fetchAll(PDO::FETCH_ASSOC);
+
 // Build query string for CSV export link
  $csvQuery = http_build_query(['search' => $search, 'status' => $status]);
 ?>
@@ -355,6 +362,37 @@ foreach ($allBookings as $b) {
                     <?php endif; ?>
                 </tbody>
             </table>
+        </div>
+                <!-- CUSTOMER FEEDBACK SECTION -->
+        <div class="card" style="background: var(--surface); border: 1px solid var(--border-color); border-radius: 8px; padding: 24px; margin-top: 40px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+            <h3 style="font-family: 'Montserrat', sans-serif; font-size: 18px; font-weight: 600; margin-bottom: 20px; color: var(--text-main);">Customer Feedback & Ratings</h3>
+            
+            <?php if (empty($ratings)): ?>
+                <p style="color: var(--text-muted); text-align: center; padding: 20px;">No customer ratings yet.</p>
+            <?php else: ?>
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px;">
+                    <?php foreach ($ratings as $r): ?>
+                        <div style="background: var(--bg-main); border: 1px solid var(--border-color); border-radius: 8px; padding: 16px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                <strong style="font-size: 14px;"><?php echo htmlspecialchars($r['name']); ?></strong>
+                                <div style="color: #F59E0B;">
+                                    <?php 
+                                    $stars = intval($r['rating']);
+                                    for ($i = 1; $i <= 5; $i++) {
+                                        echo $i <= $stars ? '<i class="fa-solid fa-star"></i>' : '<i class="fa-regular fa-star" style="color: #CBD5E1;"></i>';
+                                    }
+                                    ?>
+                                </div>
+                            </div>
+                            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 8px;">
+                                <i class="fa-solid fa-car"></i> <?php echo htmlspecialchars($r['vehicle_details']); ?> | 
+                                <i class="fa-solid fa-wrench"></i> <?php echo htmlspecialchars($r['service_name']); ?>
+                            </p>
+                            <p style="font-size: 14px; color: var(--text-main); font-style: italic;">"<?php echo htmlspecialchars($r['review'] ?? 'No written review provided.'); ?>"</p>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            <?php endif; ?>
         </div>
     </main>
 
