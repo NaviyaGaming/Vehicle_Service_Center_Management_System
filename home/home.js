@@ -1,3 +1,17 @@
+function toggleDropdown() {
+    const menu = document.getElementById('dropdownMenu');
+    menu.style.display = (menu.style.display === 'flex') ? 'none' : 'flex';
+}
+
+// Close dropdown if clicked outside
+window.onclick = function(event) {
+    if (!event.target.matches('.header-avatar')) {
+        const menu = document.getElementById('dropdownMenu');
+        if (menu && menu.style.display === 'flex') {
+            menu.style.display = 'none';
+        }
+    }
+}
 // ===== Auth State Check =====
 const loggedInUser = localStorage.getItem('torquepoint_user');
 const loginLink = document.getElementById('loginLink');

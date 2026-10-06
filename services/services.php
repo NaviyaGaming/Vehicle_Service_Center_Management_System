@@ -25,7 +25,7 @@ if (!isset($_SESSION['user_email'])) {
 
     <!-- HEADER -->
     <header class="top-header">
-        <a href="home.html" class="brand" style="text-decoration: none; color: inherit;">
+        <a href="../home/home.php" class="brand" style="text-decoration: none; color: inherit;">
             <div class="brand-icon">
                 <img src="../logo.png" alt="Logo" class="brand-logo-img" onerror="this.style.display='none'">
             </div>

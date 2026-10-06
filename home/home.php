@@ -13,28 +13,62 @@
 </head>
 <body>
 
-  <!-- ============ NAVBAR ============ -->
-  <header class="navbar" id="navbar">
-    <a href="#home" class="logo">
-      <!-- Added Logo Image -->
+<?php
+session_start();
+require_once '../db_connect.php'; // Make sure db_connect is in the main folder!
+
+ $is_logged_in = isset($_SESSION['user_email']);
+ $userName = 'User';
+ $initials = 'U';
+
+if ($is_logged_in) {
+    $email = $_SESSION['user_email'];
+    $stmt = $pdo->prepare("SELECT name FROM users WHERE email = ?");
+    $stmt->execute([$email]);
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+    $userName = $user['name'] ?? $email;
+    $initials = strtoupper(substr($userName, 0, 1));
+    if (strpos($userName, ' ') !== false) {
+        $parts = explode(' ', $userName);
+        $initials = strtoupper(substr($parts[0], 0, 1) . substr(end($parts), 0, 1));
+    }
+}
+?>
+
+<!-- ============ NAVBAR ============ -->
+<header class="navbar" id="navbar">
+    <a href="home.php" class="logo">
       <img src="../logo.png" alt="Torque Point Logo" class="logo-img">
       Torque<span>Point</span>
     </a>
 
     <nav class="nav-links" id="navLinks">
-      <a href="#home" class="nav-link" data-target="home">Home</a>
-      <!-- Both Get Started links point to login.html by default -->
-      <a href="../loginPage/login.html" class="nav-link">Get Started</a>
-      <a href="#about" class="nav-link" data-target="about">About&nbsp;Us</a>
-      <a href="#contact" class="nav-link" data-target="contact">Contact&nbsp;Us</a>
-      <!-- Added ID to Login Link -->
-      <a href="../loginPage/login.html" class="nav-link" id="loginLink">Login</a>
+        <a href="home.php" class="nav-link" data-target="home">Home</a>
+        <a href="../loginPage/login.html" class="nav-link" id="getStartedLink">Get Started</a>
+        <a href="#about" class="nav-link" data-target="about">About&nbsp;Us</a>
+        <a href="#contact" class="nav-link" data-target="contact">Contact&nbsp;Us</a>
+        
+        <?php if ($is_logged_in): ?>
+            <!-- AVATAR DROPDOWN -->
+            <div class="avatar-dropdown">
+                <div class="header-avatar" onclick="toggleDropdown()"><?php echo $initials; ?></div>
+                <div class="dropdown-menu" id="dropdownMenu">
+                    <a href="services/profile.php"><i class="fa-solid fa-user"></i> Profile</a>
+                    <a href="services/history.php"><i class="fa-solid fa-clock-rotate-left"></i> History</a>
+                    <a href="services/logout.php"><i class="fa-solid fa-arrow-right-from-bracket"></i> Logout</a>
+                </div>
+            </div>
+        <?php else: ?>
+            <!-- LOGIN LINK -->
+            <a href="../loginPage/login.html" class="nav-link" id="loginLink">Login</a>
+        <?php endif; ?>
     </nav>
 
     <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation menu">
       <span></span><span></span><span></span>
     </button>
-  </header>
+</header>
 
   <!-- ============ HERO ============ -->
   <section class="hero" id="home">
