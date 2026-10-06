@@ -38,7 +38,7 @@ if (!isset($_SESSION['user_email'])) {
         <div class="header-link">
             <i class="fa-solid fa-user"></i>
             <?php echo htmlspecialchars($userEmail); ?>
-            <a href="logout.php" style="margin-left: 15px; color: var(--danger); text-decoration: none; font-weight: 600;">Logout</a>
+            <a href="../logout.php" style="margin-left: 15px; color: var(--danger); text-decoration: none; font-weight: 600;">Logout</a>
         </div>
     </header>
 
@@ -54,7 +54,7 @@ if (!isset($_SESSION['user_email'])) {
             </p>
         </section>
 
-        <!-- VEHICLE SELECTION (4 STEPS) -->
+        <!-- VEHICLE SELECTION (5 STEPS) -->
         <div class="filter-box">
             <div class="form-group">
                 <label for="vehicleType">1. Vehicle Type</label>
@@ -90,6 +90,12 @@ if (!isset($_SESSION['user_email'])) {
                 </select>
             </div>
 
+            <!-- NEW: Mileage Input -->
+            <div class="form-group">
+                <label for="vehicleMileage">5. Mileage (km)</label>
+                <input type="number" id="vehicleMileage" placeholder="e.g., 45000" min="0">
+            </div>
+
             <button type="button" onclick="filterServices()" class="btn-primary" id="findBtn" disabled>
                 Find Services <i class="fa-solid fa-arrow-right"></i>
             </button>
@@ -119,6 +125,27 @@ if (!isset($_SESSION['user_email'])) {
                     <span id="summaryPrice" class="summary-value">Rs. 0.00</span>
                 </div>
             </div>
+            <!-- NEW: Calendar Booking Section -->
+            <div class="calendar-section">
+                <h4 style="font-family: 'Montserrat'; font-size: 16px; margin-bottom: 12px;">Select Service Date & Time</h4>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px;">
+                    <div class="form-group" style="margin: 0;">
+                        <label for="bookingDate">Preferred Date</label>
+                        <input type="date" id="bookingDate" min="<?php echo date('Y-m-d'); ?>" style="width: 100%; height: 44px; padding: 0 16px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--input-bg); color: var(--text-main); font-family: 'Inter'; font-size: 14px;">
+                    </div>
+                    <div class="form-group" style="margin: 0;">
+                        <label for="bookingTime">Preferred Time Slot</label>
+                        <select id="bookingTime" style="width: 100%; height: 44px; padding: 0 16px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--input-bg); color: var(--text-main); font-family: 'Inter'; font-size: 14px;">
+                            <option value="">-- Select Time --</option>
+                            <option value="09:00 AM - 11:00 AM">09:00 AM - 11:00 AM</option>
+                            <option value="11:00 AM - 01:00 PM">11:00 AM - 01:00 PM</option>
+                            <option value="01:00 PM - 03:00 PM">01:00 PM - 03:00 PM</option>
+                            <option value="03:00 PM - 05:00 PM">03:00 PM - 05:00 PM</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
             <button class="btn-pay" onclick="proceedToPayment()">
                 Proceed to Payment
                 <i class="fa-solid fa-lock"></i>

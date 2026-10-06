@@ -107,15 +107,31 @@ else {
 
 // 4. EMAIL NOTIFICATION LOGIC 
 
-// A. "Completed" -> Send Thank You & Rating Email
+// A. "Completed" -> Send Thank You, Rating Link, & Next Service Mileage
 if ($new_status === 'Completed') {
-    $stmt = $pdo->prepare("SELECT b.vehicle_details, b.user_email, u.name FROM bookings b JOIN users u ON b.user_email = u.email WHERE b.id = ?");
+    // Fetch booking details, user email, user name, AND vehicle mileage
+    $stmt = $pdo->prepare("SELECT b.vehicle_details, b.user_email, b.service_name, b.vehicle_mileage, u.name FROM bookings b JOIN users u ON b.user_email = u.email WHERE b.id = ?");
     $stmt->execute([$booking_id]);
     $details = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if ($details) {
         $user_name = $details['name'] ?? 'Valued Customer';
         $user_email = $details['user_email'];
+        $current_mileage = $details['vehicle_mileage'] ?? 0;
+        
+        // Calculate Next Service Mileage based on Service Type
+        $service_name = strtolower($details['service_name']);
+        $interval = 10000; // Default interval (e.g., for Full Service)
+        
+        if (strpos($service_name, 'oil') !== false) {
+            $interval = 5000; // Oil change every 5,000 km
+        } elseif (strpos($service_name, 'brake') !== false) {
+            $interval = 20000; // Brakes every 20,000 km
+        } elseif (strpos($service_name, 'tire') !== false || strpos($service_name, 'wheel') !== false) {
+            $interval = 15000; // Tires every 15,000 km
+        }
+        
+        $next_mileage = $current_mileage + $interval;
         
         $mail = new PHPMailer(true);
         try {
@@ -137,6 +153,13 @@ if ($new_status === 'Completed') {
             $mail->Body = "
                 <h2>Thank you, $user_name!</h2>
                 <p>We hope you are satisfied with the service provided for your {$details['vehicle_details']}. It was a pleasure having you at TorquePoint.</p>
+                
+                <div style='background: #F8FAFC; border-left: 4px solid #0052CC; padding: 16px; margin: 20px 0; border-radius: 4px;'>
+                    <h3 style='margin: 0 0 8px 0; color: #0F172A; font-family: Montserrat, sans-serif;'>Maintenance Reminder</h3>
+                    <p style='margin: 0; color: #64748B; font-size: 14px;'>Current Mileage: <strong>{$current_mileage} km</strong></p>
+                    <p style='margin: 4px 0 0 0; color: #64748B; font-size: 14px;'>Next Recommended Service ({$details['service_name']}): <strong style='color: #0052CC;'>{$next_mileage} km</strong></p>
+                </div>
+                
                 <p>We would love to hear your feedback! Please take a moment to rate your experience with us:</p>
                 <p style='margin-top: 20px;'>
                     <a href='$rating_link' style='background-color: #0052CC; color: #FFFFFF; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: 600; font-family: Inter, sans-serif;'>
