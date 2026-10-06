@@ -2,13 +2,23 @@
 session_start();
 require_once '../db_connect.php';
 
-// 1. Get the booking ID from the URL (e.g., stripe-checkout.php?booking_id=1)
+// 1. SAVE DATE & TIME FROM CALENDAR
+if (isset($_GET['date']) && isset($_GET['time']) && isset($_GET['booking_id'])) {
+    $b_date = $_GET['date'];
+    $b_time = $_GET['time'];
+    $b_id = $_GET['booking_id'];
+    
+    $stmt = $pdo->prepare("UPDATE bookings SET booking_date = ?, booking_time = ? WHERE id = ? AND user_email = ?");
+    $stmt->execute([$b_date, $b_time, $b_id, $_SESSION['user_email']]);
+}
+
+// 2. Get the booking ID from the URL (e.g., stripe-checkout.php?booking_id=1)
  $booking_id = $_GET['booking_id'] ?? 0;
 if (!$booking_id) {
     die("Booking ID missing.");
 }
 
-// 2. Fetch the booking from the database to get the price
+// 3. Fetch the booking from the database to get the price
  $stmt = $pdo->prepare("SELECT * FROM bookings WHERE id = ? AND user_email = ?");
  $stmt->execute([$booking_id, $_SESSION['user_email']]);
  $booking = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -16,6 +26,8 @@ if (!$booking_id) {
 if (!$booking) {
     die("Booking not found.");
 }
+
+// (Leave the rest of your Stripe cURL code exactly as it is below this point...)
 
 // 3. Convert your "Rs. 5,000" string into a clean integer (5000) for Stripe
  $priceString = str_replace(['Rs.', ' ', ','], '', $booking['price']);

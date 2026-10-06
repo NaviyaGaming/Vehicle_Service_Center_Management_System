@@ -121,11 +121,22 @@ try {
     // Attach the generated PDF to the email!
     $mail->addStringAttachment($pdf_output, "TorquePoint-Invoice-{$booking['id']}.pdf");
 
+        // Format the date nicely (e.g., "October 16, 2026")
+    $formatted_date = $booking['booking_date'] ? date('F j, Y', strtotime($booking['booking_date'])) : 'Not specified';
+    $formatted_time = $booking['booking_time'] ?? 'Not specified';
+
     $mail->isHTML(true);
     $mail->Subject = "Payment Successful - Invoice #INV-{$booking['id']}";
     $mail->Body = "
         <h2>Thank you for your payment!</h2>
         <p>Your vehicle service has been successfully booked and paid for.</p>
+        
+        <div style='background: #F8FAFC; border-left: 4px solid #0052CC; padding: 16px; margin: 20px 0; border-radius: 4px;'>
+            <h3 style='margin: 0 0 8px 0; color: #0F172A; font-family: Montserrat, sans-serif;'>Appointment Details</h3>
+            <p style='margin: 0; color: #64748B; font-size: 14px;'><strong>Date:</strong> {$formatted_date}</p>
+            <p style='margin: 4px 0 0 0; color: #64748B; font-size: 14px;'><strong>Time:</strong> {$formatted_time}</p>
+        </div>
+
         <p><strong>Vehicle:</strong> {$booking['vehicle_details']}</p>
         <p><strong>Service:</strong> {$booking['service_name']}</p>
         <p><strong>Amount Paid:</strong> {$booking['price']}</p>
