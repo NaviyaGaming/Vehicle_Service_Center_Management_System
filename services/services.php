@@ -125,30 +125,9 @@ if (!isset($_SESSION['user_email'])) {
                     <span id="summaryPrice" class="summary-value">Rs. 0.00</span>
                 </div>
             </div>
-            <!-- NEW: Calendar Booking Section -->
-            <div class="calendar-section">
-                <h4 style="font-family: 'Montserrat'; font-size: 16px; margin-bottom: 12px;">Select Service Date & Time</h4>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px;">
-                    <div class="form-group" style="margin: 0;">
-                        <label for="bookingDate">Preferred Date</label>
-                        <input type="date" id="bookingDate" min="<?php echo date('Y-m-d'); ?>" style="width: 100%; height: 44px; padding: 0 16px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--input-bg); color: var(--text-main); font-family: 'Inter'; font-size: 14px;">
-                    </div>
-                    <div class="form-group" style="margin: 0;">
-                        <label for="bookingTime">Preferred Time Slot</label>
-                        <select id="bookingTime" style="width: 100%; height: 44px; padding: 0 16px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--input-bg); color: var(--text-main); font-family: 'Inter'; font-size: 14px;">
-                            <option value="">-- Select Time --</option>
-                            <option value="09:00 AM - 11:00 AM">09:00 AM - 11:00 AM</option>
-                            <option value="11:00 AM - 01:00 PM">11:00 AM - 01:00 PM</option>
-                            <option value="01:00 PM - 03:00 PM">01:00 PM - 03:00 PM</option>
-                            <option value="03:00 PM - 05:00 PM">03:00 PM - 05:00 PM</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-
+            <!-- Proceed to Calendar Button -->
             <button class="btn-pay" onclick="proceedToPayment()">
-                Proceed to Payment
-                <i class="fa-solid fa-lock"></i>
+                Proceed to Schedule <i class="fa-solid fa-calendar-check"></i>
             </button>
         </div>
 
