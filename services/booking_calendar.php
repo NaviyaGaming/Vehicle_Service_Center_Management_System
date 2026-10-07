@@ -7,16 +7,24 @@ if (!isset($_SESSION['user_email']) || !isset($_GET['id'])) {
     exit;
 }
 
- $booking_id = $_GET['id'];
+ $userEmail = $_SESSION['user_email'];
 
-// Fetch the booking details
+// Fetch user data for Avatar
+ $stmt = $pdo->prepare("SELECT name FROM users WHERE email = ?");
+ $stmt->execute([$userEmail]);
+ $user = $stmt->fetch(PDO::FETCH_ASSOC);
+ $userName = $user['name'] ?? $userEmail;
+ $initials = strtoupper(substr($userName, 0, 1));
+if (strpos($userName, ' ') !== false) {
+    $parts = explode(' ', $userName);
+    $initials = strtoupper(substr($parts[0], 0, 1) . substr(end($parts), 0, 1));
+}
+
+ $booking_id = $_GET['id'];
  $stmt = $pdo->prepare("SELECT * FROM bookings WHERE id = ? AND user_email = ?");
  $stmt->execute([$booking_id, $_SESSION['user_email']]);
  $booking = $stmt->fetch(PDO::FETCH_ASSOC);
-
-if (!$booking) {
-    die("Booking not found.");
-}
+if (!$booking) { die("Booking not found."); }
 
 // Calendar Logic: Get current month and year
  $month = isset($_GET['m']) ? intval($_GET['m']) : date('m');
@@ -29,6 +37,17 @@ if ($month == 13) { $month = 1; $year++; }
  $days_in_month = cal_days_in_month(CAL_GREGORIAN, $month, $year);
  $first_day_of_week = date('w', strtotime("$year-$month-01")); // 0 (Sun) to 6 (Sat)
  $today = date('Y-m-d');
+
+// Fetch fully booked days (4 paid slots)
+ $paid_statuses = ['Paid', 'Vehicle Received', 'Awaiting Parts', 'In Progress', 'Ready for Pickup', 'Completed'];
+ $placeholders = implode(',', array_fill(0, count($paid_statuses), '?'));
+ $stmt = $pdo->prepare("SELECT booking_date FROM bookings WHERE status IN ($placeholders) GROUP BY booking_date HAVING COUNT(*) >= 4");
+ $stmt->execute($paid_statuses);
+ $booked_days = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+// NEW: Fetch Admin Blocked Dates (Holidays)
+ $stmt_blocked = $pdo->query("SELECT date FROM blocked_dates");
+ $blocked_days = $stmt_blocked->fetchAll(PDO::FETCH_COLUMN);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -48,6 +67,15 @@ if ($month == 13) { $month = 1; $year++; }
         .brand img { width: 40px; height: 40px; border-radius: 8px; }
         .brand h2 { font-family: 'Montserrat', sans-serif; font-size: 24px; } .brand span { color: var(--primary); }
 
+        /* AVATAR DROPDOWN CSS */
+        .avatar-dropdown { position: relative; display: flex; align-items: center; margin-left: 10px; }
+        .header-avatar { width: 40px; height: 40px; background: var(--primary); color: var(--surface); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: 'Montserrat', sans-serif; font-size: 16px; font-weight: 700; cursor: pointer; border: 2px solid transparent; transition: 0.2s; }
+        .header-avatar:hover { border-color: var(--primary-hover); }
+        .dropdown-menu { position: absolute; top: 120%; right: 0; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); min-width: 160px; z-index: 1000; display: none; flex-direction: column; overflow: hidden; }
+        .dropdown-menu a { padding: 12px 16px; text-decoration: none; color: var(--text-main); font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--border); transition: 0.2s; }
+        .dropdown-menu a:last-child { border-bottom: none; }
+        .dropdown-menu a:hover { background: var(--bg-main); color: var(--primary); }
+
         .container { max-width: 800px; margin: 40px auto; padding: 0 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
         @media (max-width: 768px) { .container { grid-template-columns: 1fr; } }
         
@@ -66,6 +94,8 @@ if ($month == 13) { $month = 1; $year++; }
         .cal-day:hover { background: var(--bg-main); border-color: var(--primary); }
         .cal-day.past { color: #CBD5E1; background: #F8FAFC; cursor: not-allowed; border-color: transparent; }
         .cal-day.sunday { color: #CBD5E1; background: #F8FAFC; cursor: not-allowed; border-color: transparent; }
+        .cal-day.booked { color: #CBD5E1; background: #F8FAFC; cursor: not-allowed; border-color: transparent; text-decoration: line-through; }
+        .cal-day.blocked { color: #EF4444; background: #FEF2F2; cursor: not-allowed; border-color: transparent; text-decoration: line-through; }
         .cal-day.selected { background: var(--primary); color: white; border-color: var(--primary); }
 
         .time-slots { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px; }
@@ -81,11 +111,20 @@ if ($month == 13) { $month = 1; $year++; }
 <body>
 
     <div class="header">
-        <a href="services.php" class="brand">
+        <a href="../home/home.php" class="brand">
             <img src="logo.png" alt="Logo" onerror="this.style.display='none'">
             <h2>Torque<span>Point</span></h2>
         </a>
-        <div class="header-user">Step 2: Schedule Service</div>
+        
+        <!-- Avatar Dropdown -->
+        <div class="avatar-dropdown">
+            <div class="header-avatar" onclick="toggleDropdown()"><?php echo $initials; ?></div>
+            <div class="dropdown-menu" id="dropdownMenu">
+                <a href="profile.php"><i class="fa-solid fa-user"></i> Profile</a>
+                <a href="history.php"><i class="fa-solid fa-clock-rotate-left"></i> History</a>
+                <a href="logout.php"><i class="fa-solid fa-arrow-right-from-bracket"></i> Logout</a>
+            </div>
+        </div>
     </div>
 
     <div class="container">
@@ -106,8 +145,10 @@ if ($month == 13) { $month = 1; $year++; }
                     $day_of_week = date('w', strtotime($date_str));
                     $is_past = $date_str < $today;
                     $is_sunday = $day_of_week == 0;
+                    $is_booked = in_array($date_str, $booked_days);
+                    $is_blocked = in_array($date_str, $blocked_days); // Check if blocked by admin
                 ?>
-                    <div class="cal-day <?php echo $is_past ? 'past' : ''; ?> <?php echo $is_sunday ? 'sunday' : ''; ?>" onclick="selectDate('<?php echo $date_str; ?>', this)">
+                    <div class="cal-day <?php echo $is_past ? 'past' : ''; ?> <?php echo $is_sunday ? 'sunday' : ''; ?> <?php echo $is_booked ? 'booked' : ''; ?> <?php echo $is_blocked ? 'blocked' : ''; ?>" onclick="selectDate('<?php echo $date_str; ?>', this)">
                         <?php echo $d; ?>
                     </div>
                 <?php endfor; ?>
@@ -133,12 +174,26 @@ if ($month == 13) { $month = 1; $year++; }
         </div>
     </div>
 
+    <!-- Tawk.to Live Chat Script -->
+    <script type="text/javascript">
+    var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+    (function(){
+    var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+    s1.async=true;
+    s1.src='https://embed.tawk.to/6abf9188df2d5634c099c01d/1k3u5101i';
+    s1.charset='UTF-8';
+    s1.setAttribute('crossorigin','*');
+    s0.parentNode.insertBefore(s1,s0);
+    })();
+    </script>
+
     <script>
         let selectedDate = null;
         let selectedTime = null;
 
         function selectDate(dateStr, element) {
-            if (element.classList.contains('past') || element.classList.contains('sunday')) return;
+            // Prevent clicking on past, sunday, fully booked, or blocked (holiday) days
+            if (element.classList.contains('past') || element.classList.contains('sunday') || element.classList.contains('booked') || element.classList.contains('blocked')) return;
 
             selectedDate = dateStr;
             document.querySelectorAll('.cal-day').forEach(el => el.classList.remove('selected'));
@@ -179,6 +234,18 @@ if ($month == 13) { $month = 1; $year++; }
         function proceedToPayment() {
             if (!selectedDate || !selectedTime) return;
             window.location.href = `../invoice/stripe-checkout.php?booking_id=<?php echo $booking_id; ?>&date=${selectedDate}&time=${encodeURIComponent(selectedTime)}`;
+        }
+
+        // Avatar Dropdown Toggle
+        function toggleDropdown() {
+            const menu = document.getElementById('dropdownMenu');
+            menu.style.display = (menu.style.display === 'flex') ? 'none' : 'flex';
+        }
+        window.onclick = function(event) {
+            if (!event.target.matches('.header-avatar')) {
+                const menu = document.getElementById('dropdownMenu');
+                if (menu && menu.style.display === 'flex') { menu.style.display = 'none'; }
+            }
         }
     </script>
 </body>
