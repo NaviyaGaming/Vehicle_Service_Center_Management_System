@@ -146,9 +146,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div class="alert-error"><ul><?php foreach ($errors as $error): ?><li><?php echo htmlspecialchars($error); ?></li><?php endforeach; ?></ul></div>
             <?php endif; ?>
             <form method="POST" action="register.php">
-                <div class="form-group"><label>Full Name</label><input type="text" name="name" value="<?php echo htmlspecialchars($name); ?>" placeholder="John Doe" required></div>
-                <div class="form-group"><label>Email Address</label><input type="email" name="email" value="<?php echo htmlspecialchars($email); ?>" placeholder="john@example.com" required></div>
-                <div class="form-group"><label>Phone Number (Optional)</label><input type="text" name="phone" value="<?php echo htmlspecialchars($phone); ?>" placeholder="+94 11 234 5678"></div>
+                <div class="form-group"><label>Full Name</label><input type="text" name="name" value="<?php echo htmlspecialchars($name); ?>" placeholder="Enter Name" required></div>
+                <div class="form-group"><label>Email Address</label><input type="email" name="email" value="<?php echo htmlspecialchars($email); ?>" placeholder="Enter Email" required></div>
+                <div class="form-group"><label>Phone Number (Optional)</label><input type="text" name="phone" value="<?php echo htmlspecialchars($phone); ?>" placeholder="Enter Phone number"></div>
                 <div class="form-group"><label>Password</label><div class="input-wrapper"><input type="password" name="password" id="password" placeholder="Min. 6 characters" required><button type="button" class="password-toggle" toggle-target="#password"><i class="fa-regular fa-eye"></i></button></div></div>
                 <div class="form-group"><label>Confirm Password</label><div class="input-wrapper"><input type="password" name="confirm_password" id="confirm_password" placeholder="Re-enter password" required><button type="button" class="password-toggle" toggle-target="#confirm_password"><i class="fa-regular fa-eye"></i></button></div></div>
                 <button type="submit" class="btn-primary">Create Account</button>
