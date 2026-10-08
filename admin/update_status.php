@@ -38,15 +38,62 @@ if (!in_array($new_status, $allowed_statuses)) {
     exit;
 }
 
-// 3. Update the database
- $updateStmt = $pdo->prepare("UPDATE bookings SET status = ? WHERE id = ?");
- $updateStmt->execute([$new_status, $booking_id]);
+// 3. MECHANIC ASSIGNMENT LOGIC
+
+// If starting a job, assign a mechanic
+if ($new_status === 'Vehicle Received') {
+    // Find the first available mechanic
+    $mechStmt = $pdo->query("SELECT id, name FROM mechanics WHERE is_available = 1 ORDER BY id ASC LIMIT 1");
+    $mechanic = $mechStmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!$mechanic) {
+        // No mechanics available!
+        echo json_encode(['success' => false, 'message' => "Cannot start job: All 4 mechanics are currently busy!"]);
+        exit; // Stop the process entirely
+    }
+
+    // Assign mechanic to booking and make them busy
+    $updateStmt = $pdo->prepare("UPDATE bookings SET status = ?, assigned_mechanic_id = ? WHERE id = ?");
+    $updateStmt->execute([$new_status, $mechanic['id'], $booking_id]);
+    
+    $pdo->prepare("UPDATE mechanics SET is_available = 0 WHERE id = ?")->execute([$mechanic['id']]);
+    
+    $alert_message = "Status updated. Assigned to mechanic: {$mechanic['name']}.";
+
+} 
+// If finishing a job, free the mechanic
+elseif ($new_status === 'Ready for Pickup' || $new_status === 'Completed') {
+    
+    // Find who was assigned to this booking
+    $stmt = $pdo->prepare("SELECT assigned_mechanic_id FROM bookings WHERE id = ?");
+    $stmt->execute([$booking_id]);
+    $booking = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if ($booking && $booking['assigned_mechanic_id']) {
+        // Free up the mechanic
+        $pdo->prepare("UPDATE mechanics SET is_available = 1 WHERE id = ?")->execute([$booking['assigned_mechanic_id']]);
+        // Unassign them from the booking (so they don't get freed twice)
+        $pdo->prepare("UPDATE bookings SET assigned_mechanic_id = NULL WHERE id = ?")->execute([$booking_id]);
+    }
+    
+    // Update booking status
+    $updateStmt = $pdo->prepare("UPDATE bookings SET status = ? WHERE id = ?");
+    $updateStmt->execute([$new_status, $booking_id]);
+    
+    $alert_message = "Status updated to '$new_status'. Mechanic is now available for the next vehicle.";
+
+} 
+// For all other statuses (Paid, Awaiting Parts, In Progress), just update the status
+else {
+    $updateStmt = $pdo->prepare("UPDATE bookings SET status = ? WHERE id = ?");
+    $updateStmt->execute([$new_status, $booking_id]);
+    $alert_message = "Status updated to '$new_status'.";
+}
 
 // 4. Email Notification Logic (Exclude 'Completed' and 'Paid')
  $notify_stages = ['Vehicle Received', 'Awaiting Parts', 'In Progress', 'Ready for Pickup'];
 
 if (in_array($new_status, $notify_stages)) {
-    // Fetch booking details and user email
     $stmt = $pdo->prepare("SELECT b.vehicle_details, b.user_email FROM bookings b WHERE b.id = ?");
     $stmt->execute([$booking_id]);
     $details = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -54,8 +101,6 @@ if (in_array($new_status, $notify_stages)) {
     if ($details) {
         $vehicle = $details['vehicle_details'];
         $user_email = $details['user_email'];
-
-        // Custom message for each stage
         $messages = [
             'Vehicle Received' => "Your $vehicle has been received at our service center. We will begin work soon!",
             'Awaiting Parts' => "We are currently awaiting parts for your $vehicle. We will notify you when work resumes.",
@@ -64,7 +109,6 @@ if (in_array($new_status, $notify_stages)) {
         ];
         $email_body = $messages[$new_status];
 
-        // Send Email via PHPMailer
         $mail = new PHPMailer(true);
         try {
             $mail->isSMTP();
@@ -89,11 +133,10 @@ if (in_array($new_status, $notify_stages)) {
             ";
             $mail->send();
         } catch (Exception $e) {
-            // Log error but don't break the status update
             error_log("Status update email failed: {$mail->ErrorInfo}");
         }
     }
 }
 
-echo json_encode(['success' => true, 'message' => "Status updated to '$new_status'."]);
+echo json_encode(['success' => true, 'message' => $alert_message]);
 ?>

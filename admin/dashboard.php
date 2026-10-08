@@ -1,4 +1,9 @@
 <?php
+// Turn on error reporting temporarily to see if any errors exist
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
 session_start();
 require_once '../db_connect.php';
 
@@ -17,28 +22,28 @@ if (!$user || $user['is_admin'] != 1) {
     exit;
 }
 
-// ===== NEW: Get Search & Filter parameters from URL =====
+// ===== Get Search & Filter parameters from URL =====
  $search = $_GET['search'] ?? '';
  $status = $_GET['status'] ?? '';
 
 // Fetch ALL bookings for the global charts (unfiltered)
  $allBookings = $pdo->query("SELECT * FROM bookings ORDER BY created_at DESC")->fetchAll(PDO::FETCH_ASSOC);
 
-// Fetch FILTERED bookings for the data table
- $sql = "SELECT * FROM bookings WHERE 1=1";
+// Fetch FILTERED bookings for the data table (WITH MECHANIC JOIN)
+ $sql = "SELECT b.*, m.name as mechanic_name FROM bookings b LEFT JOIN mechanics m ON b.assigned_mechanic_id = m.id WHERE 1=1";
  $params = [];
 
 if (!empty($search)) {
-    $sql .= " AND (user_email LIKE ? OR vehicle_details LIKE ? OR service_name LIKE ? OR id LIKE ?)";
+    $sql .= " AND (b.user_email LIKE ? OR b.vehicle_details LIKE ? OR b.service_name LIKE ? OR b.id LIKE ?)";
     $searchTerm = "%" . $search . "%";
     array_push($params, $searchTerm, $searchTerm, $searchTerm, $searchTerm);
 }
 if (!empty($status)) {
-    $sql .= " AND status = ?";
+    $sql .= " AND b.status = ?";
     array_push($params, $status);
 }
 
- $sql .= " ORDER BY created_at DESC";
+ $sql .= " ORDER BY b.created_at DESC";
  $stmt = $pdo->prepare($sql);
  $stmt->execute($params);
  $bookings = $stmt->fetchAll(PDO::FETCH_ASSOC); // This is the filtered list for the table
@@ -85,6 +90,10 @@ foreach ($allBookings as $b) {
  $chartServiceLabels = array_keys($serviceCounts);
  $chartServiceData = array_values($serviceCounts);
 
+// Fetch Mechanic Team Status for the widget
+ $mechanics = $pdo->query("SELECT * FROM mechanics ORDER BY id ASC")->fetchAll(PDO::FETCH_ASSOC);
+ $availableMechanics = count(array_filter($mechanics, fn($m) => $m['is_available'] == 1));
+
 // Build query string for CSV export link
  $csvQuery = http_build_query(['search' => $search, 'status' => $status]);
 ?>
@@ -98,6 +107,7 @@ foreach ($allBookings as $b) {
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Add Chart.js Library -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
@@ -135,7 +145,20 @@ foreach ($allBookings as $b) {
         .chart-card h3 { font-family: 'Montserrat', sans-serif; font-size: 16px; font-weight: 600; margin-bottom: 20px; color: var(--text-main); }
         .chart-container { position: relative; height: 300px; width: 100%; }
 
-        /* ===== NEW: Search & Filter Bar ===== */
+        /* ===== Mechanic Team Status Widget ===== */
+        .mech-team-card { background: var(--surface); border: 1px solid var(--border-color); border-radius: 8px; padding: 20px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+        .mech-title { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text-muted); text-transform: uppercase; margin-bottom: 12px; }
+        .mech-list { display: flex; gap: 20px; flex-wrap: wrap; }
+        .mech-item { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; }
+        .mech-dot { width: 10px; height: 10px; border-radius: 50%; }
+        .mech-available { background: var(--success); }
+        .mech-busy { background: var(--warning); }
+        .mech-status { color: var(--text-muted); font-weight: 500; font-size: 12px; }
+        .mech-count { text-align: right; }
+        .mech-count-num { font-family: 'Montserrat', sans-serif; font-size: 24px; font-weight: 700; color: var(--primary); }
+        .mech-count-label { font-size: 12px; color: var(--text-muted); }
+
+        /* ===== Search & Filter Bar ===== */
         .toolbar { background: var(--surface); border: 1px solid var(--border-color); border-radius: 8px; padding: 16px; margin-bottom: 24px; display: flex; gap: 16px; align-items: center; flex-wrap: wrap; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
         .toolbar form { display: flex; gap: 12px; flex-grow: 1; align-items: center; flex-wrap: wrap; }
         .input-search { flex-grow: 1; min-width: 200px; padding: 10px 16px; border: 1px solid var(--border-color); border-radius: 6px; font-family: 'Inter', sans-serif; font-size: 14px; }
@@ -155,6 +178,8 @@ foreach ($allBookings as $b) {
         .text-muted { color: var(--text-muted); font-size: 13px; }
         .btn-view { background: transparent; color: var(--primary); border: 1px solid var(--border-color); padding: 8px 14px; border-radius: 6px; text-decoration: none; font-size: 13px; font-weight: 600; transition: 0.2s; }
         .btn-view:hover { background: var(--bg-main); border-color: var(--primary); }
+
+        .mechanic-badge { background: rgba(0, 82, 204, 0.1); color: var(--primary); padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; }
 
         .status-dropdown { padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--surface); font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 500; color: var(--text-main); cursor: pointer; }
         .status-dropdown:focus { outline: none; border-color: var(--primary); }
@@ -180,6 +205,27 @@ foreach ($allBookings as $b) {
     <main class="container">
         <div class="page-head"><h1>Service Center Overview</h1></div>
 
+        <!-- MECHANIC TEAM STATUS WIDGET -->
+        <div class="mech-team-card">
+            <div>
+                <div class="mech-title">MECHANIC TEAM STATUS</div>
+                <div class="mech-list">
+                    <?php foreach($mechanics as $m): ?>
+                        <div class="mech-item">
+                            <span class="mech-dot <?php echo $m['is_available'] ? 'mech-available' : 'mech-busy'; ?>"></span>
+                            <?php echo htmlspecialchars($m['name']); ?>
+                            <span class="mech-status">(<?php echo $m['is_available'] ? 'Available' : 'Busy'; ?>)</span>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+            <div class="mech-count">
+                <div class="mech-count-num"><?php echo $availableMechanics; ?> / <?php echo count($mechanics); ?></div>
+                <div class="mech-count-label">Available Now</div>
+            </div>
+        </div>
+
+        <!-- STAT CARDS -->
         <div class="stats-grid">
             <div class="stat-card">
                 <i class="fa-solid fa-car-side stat-icon" style="color: var(--primary);"></i>
@@ -198,6 +244,7 @@ foreach ($allBookings as $b) {
             </div>
         </div>
 
+        <!-- CHARTS SECTION -->
         <div class="charts-grid">
             <div class="chart-card">
                 <h3>Revenue (Last 7 Days)</h3>
@@ -209,7 +256,7 @@ foreach ($allBookings as $b) {
             </div>
         </div>
 
-        <!-- ===== NEW: Search & Filter Toolbar ===== -->
+        <!-- SEARCH & FILTER TOOLBAR -->
         <div class="toolbar">
             <form method="GET">
                 <input type="text" name="search" class="input-search" placeholder="Search by Email, Vehicle, or Job ID..." value="<?php echo htmlspecialchars($search); ?>">
@@ -227,12 +274,12 @@ foreach ($allBookings as $b) {
                 <button type="submit" class="btn-filter"><i class="fa-solid fa-filter"></i> Filter</button>
                 <a href="dashboard.php" class="btn-view" style="padding: 10px 16px;">Clear</a>
             </form>
-            <!-- Export to CSV Button (passes current search/status to the script) -->
             <a href="export_csv.php?<?php echo $csvQuery; ?>" class="btn-export">
                 <i class="fa-solid fa-file-csv"></i> Export CSV
             </a>
         </div>
 
+        <!-- DATA TABLE -->
         <div class="table-card">
             <table class="data-table">
                 <thead>
@@ -241,7 +288,7 @@ foreach ($allBookings as $b) {
                         <th>CUSTOMER EMAIL</th>
                         <th>VEHICLE</th>
                         <th>SERVICE TYPE</th>
-                        <th>PRICE</th>
+                        <th>MECHANIC</th>
                         <th>STATUS</th>
                         <th>ACTION</th>
                     </tr>
@@ -259,7 +306,15 @@ foreach ($allBookings as $b) {
                                     <div class="text-muted"><?php echo date('M d, Y', strtotime($booking['created_at'])); ?></div>
                                 </td>
                                 <td><?php echo htmlspecialchars($booking['service_name']); ?></td>
-                                <td class="id-mono"><?php echo htmlspecialchars($booking['price']); ?></td>
+                                <td>
+                                    <?php 
+                                        if (!empty($booking['mechanic_name'])) {
+                                            echo "<span class='mechanic-badge'>{$booking['mechanic_name']}</span>";
+                                        } else {
+                                            echo "<span class='text-muted'>Unassigned</span>";
+                                        }
+                                    ?>
+                                </td>
                                 <td>
                                     <select class="status-dropdown" onchange="updateStatus(<?php echo $booking['id']; ?>, this.value)">
                                         <option value="Pending Payment" <?php echo ($booking['status'] == 'Pending Payment') ? 'selected' : ''; ?>>Pending Payment</option>
@@ -325,8 +380,13 @@ foreach ($allBookings as $b) {
             })
             .then(res => res.json())
             .then(data => {
-                if (data.success) { alert(data.message); } 
-                else { alert('Error: ' + data.message); location.reload(); }
+                if (data.success) { 
+                    alert(data.message); 
+                    location.reload(); // Reload to update mechanic widget immediately
+                } else { 
+                    alert('Error: ' + data.message); 
+                    location.reload(); 
+                }
             })
             .catch(error => console.error('Error:', error));
         }
