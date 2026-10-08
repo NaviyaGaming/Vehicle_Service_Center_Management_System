@@ -76,11 +76,14 @@ if ($new_status === 'Vehicle Received') {
 
     $alert_message = "Status updated. Assigned to mechanic: {$mechanic['name']}.";
 } elseif ($new_status === 'Ready for Pickup' || $new_status === 'Completed') {
-    $assigned_mechanic_id = $booking['assigned_mechanic_id'];
+    $bookingStmt = $pdo->prepare("SELECT assigned_mechanic_id FROM bookings WHERE id = ?");
+    $bookingStmt->execute([$booking_id]);
+    $booking = $bookingStmt->fetch(PDO::FETCH_ASSOC);
+    $assigned_mechanic_id = $booking['assigned_mechanic_id'] ?? null;
 
-    if ($booking && $booking['assigned_mechanic_id']) {
+    if ($assigned_mechanic_id) {
         // Free up the mechanic
-        $pdo->prepare("UPDATE mechanics SET is_available = 1 WHERE id = ?")->execute([$booking['assigned_mechanic_id']]);
+        $pdo->prepare("UPDATE mechanics SET is_available = 1 WHERE id = ?")->execute([$assigned_mechanic_id]);
         // Unassign them from the booking (so they don't get freed twice)
         $pdo->prepare("UPDATE bookings SET assigned_mechanic_id = NULL WHERE id = ?")->execute([$booking_id]);
     }
