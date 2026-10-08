@@ -87,7 +87,9 @@ if (strpos($name, ' ') !== false) {
         .form-group input { width: 100%; padding: 12px 16px; border: 1px solid var(--border); border-radius: 8px; font-family: 'Inter', sans-serif; font-size: 14px; background: var(--bg-main); }
         .form-group input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(0,82,204,0.1); }
         .form-group input:disabled { background: #f1f5f9; cursor: not-allowed; color: var(--text-muted); }
-        
+        .form-group input:read-only { background: #f1f5f9; cursor: not-allowed; color: var(--text-muted); }
+        #btnContainer { display: flex; gap: 12px; }
+        .btn-cancel { background: var(--text-muted); color: white; display: none; }
         .btn { background: var(--primary); color: white; border: none; padding: 12px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; width: 100%; font-size: 14px; transition: 0.2s; }
         .btn:hover { background: var(--primary-hover); }
         
@@ -132,10 +134,10 @@ if (strpos($name, ' ') !== false) {
         <!-- Right Column: Edit Form -->
         <div class="card">
             <div class="card-title">Personal Information</div>
-            <form id="profileForm">
+                <form id="profileForm">
                 <div class="form-group">
                     <label>Full Name</label>
-                    <input type="text" id="name" value="<?php echo htmlspecialchars($user['name'] ?? ''); ?>" placeholder="Enter your full name" required>
+                    <input type="text" id="name" value="<?php echo htmlspecialchars($user['name'] ?? ''); ?>" placeholder="Enter your full name" readonly>
                 </div>
                 <div class="form-group">
                     <label>Email Address</label>
@@ -143,20 +145,43 @@ if (strpos($name, ' ') !== false) {
                 </div>
                 <div class="form-group">
                     <label>Phone Number</label>
-                    <input type="text" id="phone" value="<?php echo htmlspecialchars($user['phone'] ?? ''); ?>" placeholder="+94 11 234 5678">
+                    <input type="text" id="phone" value="<?php echo htmlspecialchars($user['phone'] ?? ''); ?>" placeholder="+94 11 234 5678" readonly>
                 </div>
                 <div class="form-group">
                     <label>Address</label>
-                    <input type="text" id="address" value="<?php echo htmlspecialchars($user['address'] ?? ''); ?>" placeholder="123 Galle Road, Colombo">
+                    <input type="text" id="address" value="<?php echo htmlspecialchars($user['address'] ?? ''); ?>" placeholder="123 Galle Road, Colombo" readonly>
                 </div>
-                <button type="submit" class="btn">Save Changes</button>
+                
+                <!-- Button Container -->
+                <div id="btnContainer">
+                    <button type="button" class="btn" style="background: var(--text-main);" onclick="enableEdit()"><i class="fa-solid fa-pen-to-square"></i> Edit Profile</button>
+                </div>
             </form>
         </div>
     </div>
 
     <div class="toast" id="toast"></div>
 
-    <script>
+        <script>
+        function enableEdit() {
+            // Remove readonly from inputs
+            document.getElementById('name').readOnly = false;
+            document.getElementById('phone').readOnly = false;
+            document.getElementById('address').readOnly = false;
+            
+            // Change button to 'Save'
+            const btnContainer = document.getElementById('btnContainer');
+            btnContainer.innerHTML = `
+                <button type="submit" class="btn"><i class="fa-solid fa-save"></i> Save Changes</button>
+                <button type="button" class="btn btn-cancel" onclick="cancelEdit()"><i class="fa-solid fa-times"></i> Cancel</button>
+            `;
+        }
+
+        function cancelEdit() {
+            location.reload(); // Just reload to revert changes and make them readonly again
+        }
+
+        // Handle Profile Update (when Save Changes is clicked)
         document.getElementById('profileForm').addEventListener('submit', function(e) {
             e.preventDefault();
             fetch('update_profile.php?action=update_profile', {
@@ -173,7 +198,7 @@ if (strpos($name, ' ') !== false) {
                 const toast = document.getElementById('toast');
                 toast.innerText = data.message;
                 toast.style.display = 'block';
-                setTimeout(() => toast.style.display = 'none', 3000);
+                setTimeout(() => location.reload(), 1500); // Reload to lock inputs again
             });
         });
     </script>
