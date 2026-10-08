@@ -159,5 +159,43 @@ if (in_array($new_status, $notify_stages, true)) {
     }
 }
 
+// 5. PUSHER WEBSOCKET SIGNAL (Real-time update)
+ $app_id = '2199143';
+ $key = 'd8644afd04e61eef07a7';
+ $secret = '394b686306763a34e701';
+ $cluster = 'ap1';
+
+// We use the user's email as a private channel name so only they get the update
+ $channel_name = 'user-' . md5($user_email);
+ $event_name = 'status-updated';
+ $data = json_encode(['booking_id' => $booking_id, 'new_status' => $new_status]);
+
+// Function to trigger Pusher event via cURL (No Composer needed!)
+ $timestamp = time();
+ $path = "/apps/$app_id/events";
+ $params = [
+    'auth_key' => $key,
+    'auth_timestamp' => $timestamp,
+    'auth_version' => '1.0',
+    'body_md5' => md5($data)
+];
+ksort($params);
+ $query = http_build_query($params);
+ $string_to_sign = "POST\n$path\n$query";
+ $signature = hash_hmac('sha256', $string_to_sign, $secret);
+ $url = "https://api-$cluster.pusher.com$path?$query&auth_signature=$signature";
+
+ $ch = curl_init($url);
+curl_setopt($ch, CURLOPT_POST, true);
+curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode([
+    'name' => $event_name,
+    'channel' => $channel_name,
+    'data' => $data
+]));
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
+curl_exec($ch);
+curl_close($ch);
+
 echo json_encode(['success' => true, 'message' => $alert_message]);
 ?>
