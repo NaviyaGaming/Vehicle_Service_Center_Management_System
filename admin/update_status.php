@@ -1,6 +1,8 @@
 <?php
 session_start();
 require_once '../db_connect.php';
+
+// Include PHPMailer
 require_once '../PHPMailer/src/PHPMailer.php';
 require_once '../PHPMailer/src/SMTP.php';
 require_once '../PHPMailer/src/Exception.php';
@@ -45,6 +47,7 @@ if (!$booking) {
 
 $alert_message = "Status updated to '$new_status'.";
 
+// MECHANIC ASSIGNMENT LOGIC
 if ($new_status === 'Vehicle Received') {
     $mechStmt = $pdo->prepare("SELECT id, name FROM mechanics WHERE is_available = 1 ORDER BY id ASC LIMIT 1");
     $mechStmt->execute();
@@ -80,7 +83,9 @@ if ($new_status === 'Vehicle Received') {
         ->execute([$new_status, $booking_id]);
 }
 
+// EMAIL NOTIFICATION LOGIC (Exclude 'Completed' and 'Paid')
 $notify_stages = ['Vehicle Received', 'Awaiting Parts', 'In Progress', 'Ready for Pickup'];
+
 if (in_array($new_status, $notify_stages, true)) {
     $stmt = $pdo->prepare("SELECT b.vehicle_details, b.user_email FROM bookings b WHERE b.id = ?");
     $stmt->execute([$booking_id]);
@@ -100,7 +105,7 @@ if (in_array($new_status, $notify_stages, true)) {
         $email_body = $messages[$new_status] ?? 'Your vehicle service status has been updated.';
 
         $smtpUsername = getenv('SMTP_USERNAME') ?: 'navindu.subasinghe@gmail.com';
-        $smtpPassword = getenv('SMTP_PASSWORD') ?: '';
+        $smtpPassword = getenv('SMTP_PASSWORD') ?: 'upzh xqev rtqk unee';
 
         if ($smtpUsername && $smtpPassword) {
             $mail = new PHPMailer(true);
