@@ -124,37 +124,33 @@ if (in_array($new_status, $notify_stages, true)) {
 
         $email_body = $messages[$new_status] ?? 'Your vehicle service status has been updated.';
 
-        $smtpUsername = getenv('SMTP_USERNAME') ?: 'navindu.subasinghe@gmail.com';
-        $smtpPassword = getenv('SMTP_PASSWORD') ?: 'upzh xqev rtqk unee';
+        // Send Email via PHPMailer
+        $mail = new PHPMailer(true);
+        try {
+            $mail->isSMTP();
+            $mail->Host = 'smtp.gmail.com';
+            $mail->SMTPAuth = true;
+            $mail->Username = 'navindu.subasinghe@gmail.com'; 
+            $mail->Password = 'upzh xqev rtqk unee';       
+            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+            $mail->Port = 587;
 
-        if ($smtpUsername && $smtpPassword) {
-            $mail = new PHPMailer(true);
-            try {
-                $mail->isSMTP();
-                $mail->Host = 'smtp.gmail.com';
-                $mail->SMTPAuth = true;
-                $mail->Username = $smtpUsername;
-                $mail->Password = $smtpPassword;
-                $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-                $mail->Port = 587;
-
-                $mail->setFrom($smtpUsername, 'TorquePoint Service Center');
-                $mail->addAddress($user_email);
-
-                $mail->isHTML(true);
-                $mail->Subject = "TorquePoint Update: $new_status";
-                $mail->Body = "
-                    <h2>Service Status Update</h2>
-                    <p>$email_body</p>
-                    <br>
-                    <p>Thank you for choosing TorquePoint.</p>
-                    <p>Best Regards,<br>TorquePoint Team</p>
-                ";
-
-                $mail->send();
-            } catch (Exception $e) {
-                error_log("Status update email failed: {$mail->ErrorInfo}");
-            }
+            $mail->setFrom('navindu.subasinghe@gmail.com', 'TorquePoint Service Center');
+            $mail->addAddress($user_email); 
+            
+            $mail->isHTML(true);
+            $mail->Subject = "TorquePoint Update: $new_status";
+            $mail->Body = "
+                <h2>Service Status Update</h2>
+                <p>$email_body</p>
+                <br>
+                <p>Thank you for choosing TorquePoint.</p>
+                <p>Best Regards,<br>TorquePoint Team</p>
+            ";
+            $mail->send();
+        } catch (Exception $e) {
+            // Log error but don't break the status update
+            error_log("Status update email failed: {$mail->ErrorInfo}");
         }
     }
 }
