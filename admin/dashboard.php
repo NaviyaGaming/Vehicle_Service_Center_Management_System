@@ -17,32 +17,50 @@ if (!$user || $user['is_admin'] != 1) {
     exit;
 }
 
-// Fetch ALL bookings from the database, newest first
- $bookings = $pdo->query("SELECT * FROM bookings ORDER BY created_at DESC")->fetchAll(PDO::FETCH_ASSOC);
+// ===== NEW: Get Search & Filter parameters from URL =====
+ $search = $_GET['search'] ?? '';
+ $status = $_GET['status'] ?? '';
 
-// Calculate quick stats for the dashboard cards
- $totalBookings = count($bookings);
+// Fetch ALL bookings for the global charts (unfiltered)
+ $allBookings = $pdo->query("SELECT * FROM bookings ORDER BY created_at DESC")->fetchAll(PDO::FETCH_ASSOC);
+
+// Fetch FILTERED bookings for the data table
+ $sql = "SELECT * FROM bookings WHERE 1=1";
+ $params = [];
+
+if (!empty($search)) {
+    $sql .= " AND (user_email LIKE ? OR vehicle_details LIKE ? OR service_name LIKE ? OR id LIKE ?)";
+    $searchTerm = "%" . $search . "%";
+    array_push($params, $searchTerm, $searchTerm, $searchTerm, $searchTerm);
+}
+if (!empty($status)) {
+    $sql .= " AND status = ?";
+    array_push($params, $status);
+}
+
+ $sql .= " ORDER BY created_at DESC";
+ $stmt = $pdo->prepare($sql);
+ $stmt->execute($params);
+ $bookings = $stmt->fetchAll(PDO::FETCH_ASSOC); // This is the filtered list for the table
+
+// Calculate quick stats based on ALL bookings (not filtered)
+ $totalBookings = count($allBookings);
  $totalRevenue = 0;
  $pendingCount = 0;
 
 // Arrays for Charts
  $last7Days = [];
- $revenueData = [];
  $serviceCounts = [];
 
-// Initialize last 7 days with 0 revenue
 for ($i = 6; $i >= 0; $i--) {
     $date = date('Y-m-d', strtotime("-$i days"));
     $last7Days[$date] = 0;
 }
 
-foreach ($bookings as $b) {
-    // Calculate Revenue & Pending
+foreach ($allBookings as $b) {
     if ($b['status'] === 'Paid') {
         $priceNum = floatval(str_replace(['Rs.', ' ', ','], '', $b['price']));
         $totalRevenue += $priceNum;
-        
-        // Add to 7-day revenue chart if it falls within the last 7 days
         $bookingDate = date('Y-m-d', strtotime($b['created_at']));
         if (array_key_exists($bookingDate, $last7Days)) {
             $last7Days[$bookingDate] += $priceNum;
@@ -51,7 +69,6 @@ foreach ($bookings as $b) {
         $pendingCount++;
     }
 
-    // Count service types for Pie Chart (exclude cancelled)
     if ($b['status'] !== 'Cancelled') {
         $sName = $b['service_name'];
         if (!isset($serviceCounts[$sName])) {
@@ -61,13 +78,15 @@ foreach ($bookings as $b) {
     }
 }
 
-// Prepare data for JavaScript
  $chartDates = array_keys($last7Days);
- $chartDatesFormatted = array_map(fn($d) => date('D, M j', strtotime($d)), $chartDates); // e.g., "Mon, Oct 1"
+ $chartDatesFormatted = array_map(fn($d) => date('D, M j', strtotime($d)), $chartDates);
  $chartRevenue = array_values($last7Days);
 
  $chartServiceLabels = array_keys($serviceCounts);
  $chartServiceData = array_values($serviceCounts);
+
+// Build query string for CSV export link
+ $csvQuery = http_build_query(['search' => $search, 'status' => $status]);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -79,7 +98,6 @@ foreach ($bookings as $b) {
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Add Chart.js Library -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
@@ -90,7 +108,6 @@ foreach ($bookings as $b) {
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Inter', sans-serif; background: var(--bg-main); color: var(--text-main); min-height: 100vh; }
 
-        /* ===== HEADER ===== */
         .top-header { width: 100%; padding: 20px 6%; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); background: var(--surface); box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
         .brand { display: flex; align-items: center; gap: 12px; text-decoration: none; color: inherit; }
         .brand-logo-img { width: 40px; height: 40px; object-fit: contain; border-radius: 8px; }
@@ -101,12 +118,10 @@ foreach ($bookings as $b) {
         .user-info { display: flex; align-items: center; gap: 8px; color: var(--text-muted); font-size: 14px; font-weight: 500; }
         .btn-logout { color: var(--danger); text-decoration: none; font-weight: 600; font-size: 14px; }
 
-        /* ===== MAIN CONTAINER ===== */
         .container { max-width: 1200px; margin: 40px auto; padding: 0 20px; }
         .page-head { margin-bottom: 32px; }
         .page-head h1 { font-family: 'Montserrat', sans-serif; font-size: 28px; font-weight: 600; color: var(--text-main); }
 
-        /* ===== STAT CARDS ===== */
         .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-bottom: 40px; }
         .stat-card { background: var(--surface); border: 1px solid var(--border-color); border-radius: 8px; padding: 24px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
         .stat-label { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; }
@@ -115,13 +130,21 @@ foreach ($bookings as $b) {
         .stat-card.revenue .stat-value { color: var(--success); }
         .stat-card.pending .stat-value { color: var(--warning); }
 
-        /* ===== CHARTS ===== */
         .charts-grid { display: grid; grid-template-columns: 1.6fr 1fr; gap: 24px; margin-bottom: 40px; }
         .chart-card { background: var(--surface); border: 1px solid var(--border-color); border-radius: 8px; padding: 24px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
         .chart-card h3 { font-family: 'Montserrat', sans-serif; font-size: 16px; font-weight: 600; margin-bottom: 20px; color: var(--text-main); }
         .chart-container { position: relative; height: 300px; width: 100%; }
 
-        /* ===== DATA TABLE ===== */
+        /* ===== NEW: Search & Filter Bar ===== */
+        .toolbar { background: var(--surface); border: 1px solid var(--border-color); border-radius: 8px; padding: 16px; margin-bottom: 24px; display: flex; gap: 16px; align-items: center; flex-wrap: wrap; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+        .toolbar form { display: flex; gap: 12px; flex-grow: 1; align-items: center; flex-wrap: wrap; }
+        .input-search { flex-grow: 1; min-width: 200px; padding: 10px 16px; border: 1px solid var(--border-color); border-radius: 6px; font-family: 'Inter', sans-serif; font-size: 14px; }
+        .input-search:focus { outline: none; border-color: var(--primary); }
+        .select-status { padding: 10px 16px; border: 1px solid var(--border-color); border-radius: 6px; font-family: 'Inter', sans-serif; font-size: 14px; background: var(--surface); cursor: pointer; }
+        .btn-filter { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: 600; cursor: pointer; }
+        .btn-export { background: var(--text-main); color: white; text-decoration: none; padding: 10px 20px; border-radius: 6px; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; }
+        .btn-export:hover { opacity: 0.9; }
+
         .table-card { background: var(--surface); border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
         .data-table { width: 100%; border-collapse: collapse; }
         .data-table th { text-align: left; padding: 16px 24px; background: var(--bg-main); color: var(--text-muted); font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border-color); }
@@ -133,11 +156,9 @@ foreach ($bookings as $b) {
         .btn-view { background: transparent; color: var(--primary); border: 1px solid var(--border-color); padding: 8px 14px; border-radius: 6px; text-decoration: none; font-size: 13px; font-weight: 600; transition: 0.2s; }
         .btn-view:hover { background: var(--bg-main); border-color: var(--primary); }
 
-        /* Status Dropdown Styles */
         .status-dropdown { padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--surface); font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 500; color: var(--text-main); cursor: pointer; }
         .status-dropdown:focus { outline: none; border-color: var(--primary); }
 
-        /* Responsive */
         @media (max-width: 900px) { .stats-grid, .charts-grid { grid-template-columns: 1fr; } }
         @media (max-width: 768px) { .data-table { display: block; overflow-x: auto; white-space: nowrap; } .top-header { padding: 16px 4%; } .user-info { display: none; } }
     </style>
@@ -159,7 +180,6 @@ foreach ($bookings as $b) {
     <main class="container">
         <div class="page-head"><h1>Service Center Overview</h1></div>
 
-        <!-- STAT CARDS -->
         <div class="stats-grid">
             <div class="stat-card">
                 <i class="fa-solid fa-car-side stat-icon" style="color: var(--primary);"></i>
@@ -178,23 +198,41 @@ foreach ($bookings as $b) {
             </div>
         </div>
 
-        <!-- CHARTS SECTION -->
         <div class="charts-grid">
             <div class="chart-card">
                 <h3>Revenue (Last 7 Days)</h3>
-                <div class="chart-container">
-                    <canvas id="revenueChart"></canvas>
-                </div>
+                <div class="chart-container"><canvas id="revenueChart"></canvas></div>
             </div>
             <div class="chart-card">
                 <h3>Most Popular Services</h3>
-                <div class="chart-container">
-                    <canvas id="servicesChart"></canvas>
-                </div>
+                <div class="chart-container"><canvas id="servicesChart"></canvas></div>
             </div>
         </div>
 
-        <!-- DATA TABLE -->
+        <!-- ===== NEW: Search & Filter Toolbar ===== -->
+        <div class="toolbar">
+            <form method="GET">
+                <input type="text" name="search" class="input-search" placeholder="Search by Email, Vehicle, or Job ID..." value="<?php echo htmlspecialchars($search); ?>">
+                <select name="status" class="select-status">
+                    <option value="">All Statuses</option>
+                    <option value="Pending Payment" <?php if($status == 'Pending Payment') echo 'selected'; ?>>Pending Payment</option>
+                    <option value="Paid" <?php if($status == 'Paid') echo 'selected'; ?>>Paid</option>
+                    <option value="Vehicle Received" <?php if($status == 'Vehicle Received') echo 'selected'; ?>>Vehicle Received</option>
+                    <option value="Awaiting Parts" <?php if($status == 'Awaiting Parts') echo 'selected'; ?>>Awaiting Parts</option>
+                    <option value="In Progress" <?php if($status == 'In Progress') echo 'selected'; ?>>In Progress</option>
+                    <option value="Ready for Pickup" <?php if($status == 'Ready for Pickup') echo 'selected'; ?>>Ready for Pickup</option>
+                    <option value="Completed" <?php if($status == 'Completed') echo 'selected'; ?>>Completed</option>
+                    <option value="Cancelled" <?php if($status == 'Cancelled') echo 'selected'; ?>>Cancelled</option>
+                </select>
+                <button type="submit" class="btn-filter"><i class="fa-solid fa-filter"></i> Filter</button>
+                <a href="dashboard.php" class="btn-view" style="padding: 10px 16px;">Clear</a>
+            </form>
+            <!-- Export to CSV Button (passes current search/status to the script) -->
+            <a href="export_csv.php?<?php echo $csvQuery; ?>" class="btn-export">
+                <i class="fa-solid fa-file-csv"></i> Export CSV
+            </a>
+        </div>
+
         <div class="table-card">
             <table class="data-table">
                 <thead>
@@ -210,7 +248,7 @@ foreach ($bookings as $b) {
                 </thead>
                 <tbody>
                     <?php if (count($bookings) == 0): ?>
-                        <tr><td colspan="7" style="text-align: center; padding: 40px; color: var(--text-muted);">No bookings have been made yet.</td></tr>
+                        <tr><td colspan="7" style="text-align: center; padding: 40px; color: var(--text-muted);">No bookings found matching your search.</td></tr>
                     <?php else: ?>
                         <?php foreach ($bookings as $booking): ?>
                             <tr>
@@ -243,9 +281,7 @@ foreach ($bookings as $b) {
     </main>
 
     <script>
-        // ===== Chart.js Scripts =====
-
-        // 1. Revenue Bar Chart
+        // Chart.js Scripts
         const ctxRev = document.getElementById('revenueChart').getContext('2d');
         new Chart(ctxRev, {
             type: 'bar',
@@ -260,62 +296,27 @@ foreach ($bookings as $b) {
                     borderRadius: 4
                 }]
             },
-            options: { 
-                responsive: true, 
-                maintainAspectRatio: false, 
-                plugins: { legend: { display: false } }, 
-                scales: { y: { beginAtZero: true } } 
-            }
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
         });
 
-        // 2. Popular Services Pie Chart
         const ctxServ = document.getElementById('servicesChart').getContext('2d');
-        
-        // Large array of unique, distinct colors
         const colorPalette = [
-            'rgba(0, 82, 204, 0.8)',   // Cobalt Blue
-            'rgba(16, 185, 129, 0.8)', // Emerald
-            'rgba(245, 158, 11, 0.8)', // Amber
-            'rgba(239, 68, 68, 0.8)',  // Rose
-            'rgba(139, 92, 246, 0.8)', // Violet
-            'rgba(14, 165, 233, 0.8)', // Sky Blue
-            'rgba(236, 72, 153, 0.8)', // Pink
-            'rgba(217, 119, 6, 0.8)',  // Orange
-            'rgba(20, 184, 166, 0.8)', // Teal
-            'rgba(99, 102, 241, 0.8)', // Indigo
-            'rgba(132, 204, 22, 0.8)', // Lime
-            'rgba(168, 85, 247, 0.8)'  // Purple
+            'rgba(0, 82, 204, 0.8)', 'rgba(16, 185, 129, 0.8)', 'rgba(245, 158, 11, 0.8)', 'rgba(239, 68, 68, 0.8)', 'rgba(139, 92, 246, 0.8)', 'rgba(14, 165, 233, 0.8)', 'rgba(236, 72, 153, 0.8)', 'rgba(217, 119, 6, 0.8)', 'rgba(20, 184, 166, 0.8)', 'rgba(99, 102, 241, 0.8)', 'rgba(132, 204, 22, 0.8)', 'rgba(168, 85, 247, 0.8)'
         ];
-
         new Chart(ctxServ, {
             type: 'pie',
             data: {
                 labels: <?php echo json_encode($chartServiceLabels); ?>,
                 datasets: [{
                     data: <?php echo json_encode($chartServiceData); ?>,
-                    // Dynamically assign a unique color to each slice based on the palette
                     backgroundColor: colorPalette,
-                    borderWidth: 2, 
-                    borderColor: '#FFFFFF'
+                    borderWidth: 2, borderColor: '#FFFFFF'
                 }]
             },
-            options: { 
-                responsive: true, 
-                maintainAspectRatio: false, 
-                plugins: { 
-                    legend: { 
-                        position: 'bottom',
-                        labels: {
-                            boxWidth: 12,
-                            padding: 15,
-                            font: { size: 11 }
-                        }
-                    } 
-                } 
-            }
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, padding: 15, font: { size: 11 } } } } }
         });
 
-        // ===== Status Update Script =====
+        // Status Update Script
         function updateStatus(bookingId, newStatus) {
             fetch('update_status.php', {
                 method: 'POST',
