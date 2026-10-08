@@ -119,12 +119,13 @@ if (!$booking) {
             </div>
 
             <!-- Payment Button -->
-            <!-- Replace the old button with this link -->
+            <!-- Payment Button (Stripe) -->
             <a href="stripe-checkout.php?booking_id=<?php echo $booking['id']; ?>" class="btn-pay" style="text-decoration: none; display: block; text-align: center;">
                 <i class="fa-brands fa-cc-visa"></i>
-                 Pay Securely with Stripe
+                 Pay Securely
             </a>
-            <a href="../services/services.php" class="back-link">
+            
+            <a href="../services/history.php" class="back-link" style="display: block; text-align: center; margin-top: 20px; color: var(--text-muted); text-decoration: none; font-size: 14px; font-weight: 500;">
                 <i class="fa-solid fa-arrow-left"></i> Back to Services
             </a>
         </div>

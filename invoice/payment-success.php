@@ -5,8 +5,12 @@ require_once '../PHPMailer/src/PHPMailer.php';
 require_once '../PHPMailer/src/SMTP.php';
 require_once '../PHPMailer/src/Exception.php';
 
+// Require Dompdf
+require_once '../dompdf/autoload.inc.php';
+
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
+use Dompdf\Dompdf;
 
  $booking_id = $_GET['booking_id'] ?? 0;
 
@@ -14,31 +18,111 @@ use PHPMailer\PHPMailer\Exception;
  $stmt = $pdo->prepare("UPDATE bookings SET status = 'Paid' WHERE id = ? AND user_email = ?");
  $stmt->execute([$booking_id, $_SESSION['user_email']]);
 
-// 2. Fetch the updated booking details for the email
+// 2. Fetch the updated booking details for the email and PDF
  $stmt = $pdo->prepare("SELECT * FROM bookings WHERE id = ?");
  $stmt->execute([$booking_id]);
  $booking = $stmt->fetch(PDO::FETCH_ASSOC);
 
-// 3. Send Email Notification via PHPMailer
+if (!$booking) {
+    die("Booking not found.");
+}
+
+// Calculate totals for PDF
+ $priceNumber = floatval(str_replace(['Rs.', ' ', ','], '', $booking['price']));
+ $tax = 0;
+ $total = $priceNumber + $tax;
+
+// 3. Generate the PDF in memory (Do not download to browser)
+ $html = '
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: Helvetica, Arial, sans-serif; color: #0F172A; font-size: 14px; }
+        .header { display: flex; justify-content: space-between; border-bottom: 2px solid #0052CC; padding-bottom: 20px; }
+        .brand { font-size: 28px; font-weight: bold; color: #0052CC; }
+        .invoice-meta { text-align: right; font-size: 12px; color: #64748B; }
+        .bill-to { margin-top: 30px; }
+        .bill-to h3 { font-size: 12px; color: #64748B; text-transform: uppercase; margin-bottom: 5px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 30px; }
+        th { background: #F8FAFC; text-align: left; padding: 12px; font-size: 12px; color: #64748B; border-bottom: 1px solid #E2E8F0; }
+        td { padding: 15px 12px; font-size: 14px; border-bottom: 1px solid #E2E8F0; }
+        .totals { margin-top: 30px; width: 300px; margin-left: auto; }
+        .totals div { display: flex; justify-content: space-between; padding: 8px 0; font-size: 14px; }
+        .grand-total { font-weight: bold; font-size: 18px; border-top: 2px solid #0F172A; margin-top: 10px; padding-top: 10px; }
+        .grand-total .amount { color: #0052CC; }
+        .text-right { text-align: right; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="brand">TorquePoint</div>
+        <div class="invoice-meta">
+            <strong>Invoice #INV-' . $booking['id'] . '</strong><br>
+            Date: ' . date('M d, Y', strtotime($booking['created_at'])) . '<br>
+            Status: <strong>Paid</strong>
+        </div>
+    </div>
+    
+    <div class="bill-to">
+        <h3>Bill To</h3>
+        <strong>' . htmlspecialchars($_SESSION['user_name'] ?? 'Customer') . '</strong><br>
+        ' . htmlspecialchars($_SESSION['user_email']) . '
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>SERVICE DESCRIPTION</th>
+                <th>VEHICLE</th>
+                <th>EST. TIME</th>
+                <th class="text-right">AMOUNT</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>' . htmlspecialchars($booking['service_name']) . '</strong><br><span style="color:#64748B; font-size:12px;">Service & Maintenance</span></td>
+                <td>' . htmlspecialchars($booking['vehicle_details']) . '</td>
+                <td>' . htmlspecialchars($booking['est_time']) . '</td>
+                <td class="text-right">' . htmlspecialchars($booking['price']) . '</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="totals">
+        <div><span>Subtotal:</span> <span>Rs. ' . number_format($priceNumber, 2) . '</span></div>
+        <div><span>Tax (0%):</span> <span>Rs. ' . number_format($tax, 2) . '</span></div>
+        <div class="grand-total"><span>Total Paid:</span> <span class="amount">Rs. ' . number_format($total, 2) . '</span></div>
+    </div>
+</body>
+</html>';
+
+ $dompdf = new Dompdf();
+ $dompdf->loadHtml($html);
+ $dompdf->setPaper('A4', 'portrait');
+ $dompdf->render();
+ $pdf_output = $dompdf->output(); // Get the PDF as a string
+
+// 4. Send Email Notification via PHPMailer
  $mail = new PHPMailer(true);
 
 try {
-    // Server settings (Using Gmail's SMTP server)
     $mail->isSMTP();
     $mail->Host = 'smtp.gmail.com';
     $mail->SMTPAuth = true;
     $mail->Username = 'navindu.subasinghe@gmail.com'; 
-    $mail->Password = 'upzh xqev rtqk unee';          
+    $mail->Password = 'upzh xqev rtqk unee';       
     $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
     $mail->Port = 587;
 
-    // Recipients
     $mail->setFrom('navindu.subasinghe@gmail.com', 'TorquePoint Service Center');
     $mail->addAddress($_SESSION['user_email']); 
+    
+    // Attach the generated PDF to the email!
+    $mail->addStringAttachment($pdf_output, "TorquePoint-Invoice-{$booking['id']}.pdf");
 
-    // Content
     $mail->isHTML(true);
-    $mail->Subject = "Payment Successful - Invoice #" . $booking_id;
+    $mail->Subject = "Payment Successful - Invoice #INV-{$booking['id']}";
     $mail->Body = "
         <h2>Thank you for your payment!</h2>
         <p>Your vehicle service has been successfully booked and paid for.</p>
@@ -47,12 +131,12 @@ try {
         <p><strong>Amount Paid:</strong> {$booking['price']}</p>
         <p><strong>Status:</strong> Paid</p>
         <br>
-        <p>Best Regards,</p>
-        <p>TorquePoint Team</p>
+        <p>Please find your detailed PDF invoice attached to this email.</p>
+        <p>Best Regards,<br>TorquePoint Team</p>
     ";
 
     $mail->send();
-    $email_message = "Email receipt sent successfully!";
+    $email_message = "Email receipt sent successfully with PDF attachment!";
 } catch (Exception $e) {
     $email_message = "Email could not be sent. Error: {$mail->ErrorInfo}";
 }
