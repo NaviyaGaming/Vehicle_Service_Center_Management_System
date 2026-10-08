@@ -57,10 +57,16 @@ for ($i = 6; $i >= 0; $i--) {
     $last7Days[$date] = 0;
 }
 
+// Define which statuses are considered "Paid" for revenue tracking
+ $paid_statuses = ['Paid', 'Vehicle Received', 'Awaiting Parts', 'In Progress', 'Ready for Pickup', 'Completed'];
+
 foreach ($allBookings as $b) {
-    if ($b['status'] === 'Paid') {
+    // If the booking is in any of the paid statuses, count the revenue!
+    if (in_array($b['status'], $paid_statuses)) {
         $priceNum = floatval(str_replace(['Rs.', ' ', ','], '', $b['price']));
         $totalRevenue += $priceNum;
+        
+        // Add to 7-day revenue chart if it falls within the last 7 days
         $bookingDate = date('Y-m-d', strtotime($b['created_at']));
         if (array_key_exists($bookingDate, $last7Days)) {
             $last7Days[$bookingDate] += $priceNum;
@@ -69,6 +75,7 @@ foreach ($allBookings as $b) {
         $pendingCount++;
     }
 
+    // Count service types for Pie Chart (exclude cancelled)
     if ($b['status'] !== 'Cancelled') {
         $sName = $b['service_name'];
         if (!isset($serviceCounts[$sName])) {
