@@ -12,28 +12,48 @@ use PHPMailer\PHPMailer\Exception;
 
 header('Content-Type: application/json');
 
+// 1. Security Check
 if (!isset($_SESSION['user_email'])) {
     echo json_encode(['success' => false, 'message' => 'Not logged in.']);
     exit;
 }
 
-$stmt = $pdo->prepare("SELECT is_admin FROM users WHERE email = ?");
-$stmt->execute([$_SESSION['user_email']]);
-$user = $stmt->fetch(PDO::FETCH_ASSOC);
+ $stmt = $pdo->prepare("SELECT is_admin FROM users WHERE email = ?");
+ $stmt->execute([$_SESSION['user_email']]);
+ $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-if (!$user || (int)$user['is_admin'] !== 1) {
+if (!$user || $user['is_admin'] != 1) {
     echo json_encode(['success' => false, 'message' => 'Access Denied. Admins only.']);
     exit;
 }
 
-$input = json_decode(file_get_contents('php://input'), true);
-$booking_id = (int)($input['booking_id'] ?? 0);
-$new_status = trim((string)($input['new_status'] ?? ''));
+// 2. Get data from JavaScript
+ $input = json_decode(file_get_contents('php://input'), true);
+ $booking_id = $input['booking_id'] ?? 0;
+ $new_status = $input['new_status'] ?? '';
 
 $allowed_statuses = ['Paid', 'Vehicle Received', 'Awaiting Parts', 'In Progress', 'Ready for Pickup', 'Completed'];
 if (!in_array($new_status, $allowed_statuses, true)) {
     echo json_encode(['success' => false, 'message' => 'Invalid status selected.']);
     exit;
+}
+
+// If the user is a MECHANIC, ensure they only update jobs assigned to THEM
+if ($user['role'] === 'mechanic') {
+    $stmt = $pdo->prepare("SELECT assigned_mechanic_id FROM bookings WHERE id = ?");
+    $stmt->execute([$booking_id]);
+    $booking_check = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!$booking_check || $booking_check['assigned_mechanic_id'] != $user['mechanic_id']) {
+        echo json_encode(['success' => false, 'message' => 'Access Denied: This job is not assigned to you.']);
+        exit;
+    }
+
+    // Mechanics can only set these specific statuses
+    if (!in_array($new_status, ['In Progress', 'Ready for Pickup', 'Completed'])) {
+        echo json_encode(['success' => false, 'message' => 'Mechanics can only mark jobs as In Progress, Ready for Pickup, or Completed.']);
+        exit;
+    }
 }
 
 $bookingStmt = $pdo->prepare("SELECT id, assigned_mechanic_id, status FROM bookings WHERE id = ?");
