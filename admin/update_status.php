@@ -56,18 +56,9 @@ if ($user['role'] === 'mechanic') {
     }
 }
 
-$bookingStmt = $pdo->prepare("SELECT id, assigned_mechanic_id, status FROM bookings WHERE id = ?");
-$bookingStmt->execute([$booking_id]);
-$booking = $bookingStmt->fetch(PDO::FETCH_ASSOC);
+// 3. MECHANIC ASSIGNMENT LOGIC
 
-if (!$booking) {
-    echo json_encode(['success' => false, 'message' => 'Booking not found.']);
-    exit;
-}
-
-$alert_message = "Status updated to '$new_status'.";
-
-// MECHANIC ASSIGNMENT LOGIC
+// If starting a job, assign a mechanic
 if ($new_status === 'Vehicle Received') {
     $mechStmt = $pdo->prepare("SELECT id, name FROM mechanics WHERE is_available = 1 ORDER BY id ASC LIMIT 1");
     $mechStmt->execute();
@@ -87,16 +78,17 @@ if ($new_status === 'Vehicle Received') {
 } elseif ($new_status === 'Ready for Pickup' || $new_status === 'Completed') {
     $assigned_mechanic_id = $booking['assigned_mechanic_id'];
 
-    if ($assigned_mechanic_id) {
-        $pdo->prepare("UPDATE mechanics SET is_available = 1 WHERE id = ?")
-            ->execute([$assigned_mechanic_id]);
-        $pdo->prepare("UPDATE bookings SET assigned_mechanic_id = NULL WHERE id = ?")
-            ->execute([$booking_id]);
+    if ($booking && $booking['assigned_mechanic_id']) {
+        // Free up the mechanic
+        $pdo->prepare("UPDATE mechanics SET is_available = 1 WHERE id = ?")->execute([$booking['assigned_mechanic_id']]);
+        // Unassign them from the booking (so they don't get freed twice)
+        $pdo->prepare("UPDATE bookings SET assigned_mechanic_id = NULL WHERE id = ?")->execute([$booking_id]);
     }
-
-    $pdo->prepare("UPDATE bookings SET status = ? WHERE id = ?")
-        ->execute([$new_status, $booking_id]);
-
+    
+    // Update booking status
+    $updateStmt = $pdo->prepare("UPDATE bookings SET status = ? WHERE id = ?");
+    $updateStmt->execute([$new_status, $booking_id]);
+    
     $alert_message = "Status updated to '$new_status'. Mechanic is now available for the next vehicle.";
 } else {
     $pdo->prepare("UPDATE bookings SET status = ? WHERE id = ?")
