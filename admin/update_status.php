@@ -103,10 +103,11 @@ if ($new_status === 'Vehicle Received') {
         ->execute([$new_status, $booking_id]);
 }
 
-// EMAIL NOTIFICATION LOGIC (Exclude 'Completed' and 'Paid')
-$notify_stages = ['Vehicle Received', 'Awaiting Parts', 'In Progress', 'Ready for Pickup'];
+// 4. Email Notification Logic (Exclude 'Completed' and 'Paid')
+ $notify_stages = ['Vehicle Received', 'Awaiting Parts', 'In Progress', 'Ready for Pickup'];
 
-if (in_array($new_status, $notify_stages, true)) {
+if (in_array($new_status, $notify_stages)) {
+    // Fetch booking details and user email
     $stmt = $pdo->prepare("SELECT b.vehicle_details, b.user_email FROM bookings b WHERE b.id = ?");
     $stmt->execute([$booking_id]);
     $details = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -124,7 +125,6 @@ if (in_array($new_status, $notify_stages, true)) {
 
         $email_body = $messages[$new_status] ?? 'Your vehicle service status has been updated.';
 
-        // Send Email via PHPMailer
         $mail = new PHPMailer(true);
         try {
             $mail->isSMTP();
@@ -149,7 +149,6 @@ if (in_array($new_status, $notify_stages, true)) {
             ";
             $mail->send();
         } catch (Exception $e) {
-            // Log error but don't break the status update
             error_log("Status update email failed: {$mail->ErrorInfo}");
         }
     }
