@@ -146,7 +146,6 @@ if ($new_status === 'Completed') {
  $notify_stages = ['Vehicle Received', 'Awaiting Parts', 'In Progress', 'Ready for Pickup'];
 
 if (in_array($new_status, $notify_stages)) {
-    // Fetch booking details and user email
     $stmt = $pdo->prepare("SELECT b.vehicle_details, b.user_email FROM bookings b WHERE b.id = ?");
     $stmt->execute([$booking_id]);
     $details = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -177,15 +176,24 @@ if (in_array($new_status, $notify_stages)) {
             $mail->setFrom('navindu.subasinghe@gmail.com', 'TorquePoint Service Center');
             $mail->addAddress($user_email); 
             
-            $mail->isHTML(true);
-            $mail->Subject = "TorquePoint Update: $new_status";
-            $mail->Body = "
-                <h2>Service Status Update</h2>
-                <p>$email_body</p>
-                <br>
-                <p>Thank you for choosing TorquePoint.</p>
-                <p>Best Regards,<br>TorquePoint Team</p>
-            ";
+        // Format date/time if they exist
+        $formatted_date = $details['booking_date'] ? date('F j, Y', strtotime($details['booking_date'])) : '';
+        $formatted_time = $details['booking_time'] ?? '';
+        $appointment_text = '';
+        if ($formatted_date) {
+            $appointment_text = "<p style='color:#64748B; font-size:14px;'><strong>Appointment Date:</strong> {$formatted_date} at {$formatted_time}</p>";
+        }
+
+        $mail->isHTML(true);
+        $mail->Subject = "TorquePoint Update: $new_status";
+        $mail->Body = "
+            <h2>Service Status Update</h2>
+            <p>$email_body</p>
+            $appointment_text
+            <br>
+            <p>Thank you for choosing TorquePoint.</p>
+            <p>Best Regards,<br>TorquePoint Team</p>
+        ";
             $mail->send();
         } catch (Exception $e) {
             error_log("Status update email failed: {$mail->ErrorInfo}");
