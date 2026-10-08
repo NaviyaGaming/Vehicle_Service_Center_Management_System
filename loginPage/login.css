@@ -3,7 +3,7 @@
     --primary: #0d3c82;          /* Cobalt */
     --primary-hover: #111925;
     --bg-main: #e8ebed;          /* Slate 50 */
-    --surface: #FFFFFF;          /* White */
+    --surface: #ffffff;          /* White */
     --text-main: #0F172A;        /* Slate 900 */
     --text-muted: #64748B;       /* Slate 500 */
     --success: #10B981;          /* Emerald */
@@ -125,7 +125,7 @@ body {
     letter-spacing: -0.5px;
     margin-top: 0; /* Removed artificial top margin */
     margin-bottom: 24px;
-    color: var(--surface);
+    color: rgb(248, 243, 107);
 }
 
 .feature-desc {
