@@ -425,9 +425,20 @@ window.proceedToPayment = function() {
     const serviceElement = document.getElementById("summaryService");
     const timeElement = document.getElementById("summaryTime");
     const priceElement = document.getElementById("summaryPrice");
+    const mileageInput = document.getElementById("vehicleMileage");
+    
+    // NEW: Get Date and Time inputs
+    const bookingDateInput = document.getElementById("bookingDate");
+    const bookingTimeInput = document.getElementById("bookingTime");
 
     if (!vehicleElement || !serviceElement || !timeElement || !priceElement) {
         alert("Order information could not be found.");
+        return;
+    }
+
+    // NEW: Validate Date and Time
+    if (!bookingDateInput.value || !bookingTimeInput.value) {
+        alert("Please select a preferred Date and Time for your service.");
         return;
     }
 
@@ -435,6 +446,11 @@ window.proceedToPayment = function() {
     const service = serviceElement.innerText;
     const time = timeElement.innerText;
     const price = priceElement.innerText;
+    const mileage = mileageInput ? mileageInput.value : 0;
+    
+    // NEW: Get values
+    const bDate = bookingDateInput.value;
+    const bTime = bookingTimeInput.value;
 
     if (!vehicle || vehicle === "N/A" || !service || service === "N/A") {
         alert("Please select a service first.");
@@ -443,14 +459,15 @@ window.proceedToPayment = function() {
 
     fetch("../invoice/save_booking.php", {
         method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
             vehicle: vehicle,
             service: service,
             time: time,
-            price: price
+            price: price,
+            mileage: mileage,
+            booking_date: bDate, // Send Date
+            booking_time: bTime  // Send Time
         })
     })
     .then(function(response) {
