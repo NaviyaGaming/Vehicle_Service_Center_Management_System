@@ -135,13 +135,22 @@ foreach ($bookings as $b) {
         .id-mono { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--text-muted); }
         .text-muted { color: var(--text-muted); font-size: 13px; }
 
-        /* Status Badges */
-        .status-badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; text-transform: capitalize; }
-        .status-paid { background: rgba(16, 185, 129, 0.1); color: var(--success); }
-        .status-pending { background: rgba(245, 158, 11, 0.1); color: var(--warning); }
-
         .btn-view { background: transparent; color: var(--primary); border: 1px solid var(--border-color); padding: 8px 14px; border-radius: 6px; text-decoration: none; font-size: 13px; font-weight: 600; transition: 0.2s; }
         .btn-view:hover { background: var(--bg-main); border-color: var(--primary); }
+
+        /* Status Dropdown Styles */
+        .status-dropdown {
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            background: var(--surface);
+            font-family: 'Inter', sans-serif;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-main);
+            cursor: pointer;
+        }
+        .status-dropdown:focus { outline: none; border-color: var(--primary); }
 
         /* Responsive */
         @media (max-width: 900px) {
@@ -159,7 +168,6 @@ foreach ($bookings as $b) {
     <!-- HEADER -->
     <header class="top-header">
         <a href="dashboard.php" class="brand">
-            <!-- Adjust logo path if needed. Assuming it's in the services folder -->
             <img src="../services/logo.png" alt="Logo" class="brand-logo-img" onerror="this.style.display='none'">
             <div class="brand-text">
                 <h2>Torque<span>Point</span> Admin</h2>
@@ -233,10 +241,15 @@ foreach ($bookings as $b) {
                                 <td><?php echo htmlspecialchars($booking['service_name']); ?></td>
                                 <td class="id-mono"><?php echo htmlspecialchars($booking['price']); ?></td>
                                 <td>
-                                    <?php 
-                                        $statusClass = $booking['status'] === 'Paid' ? 'status-paid' : 'status-pending';
-                                        echo "<span class='status-badge $statusClass'>{$booking['status']}</span>";
-                                    ?>
+                                    <select class="status-dropdown" onchange="updateStatus(<?php echo $booking['id']; ?>, this.value)">
+                                        <option value="Pending Payment" <?php echo ($booking['status'] == 'Pending Payment') ? 'selected' : ''; ?>>Pending Payment</option>
+                                        <option value="Paid" <?php echo ($booking['status'] == 'Paid') ? 'selected' : ''; ?>>Paid</option>
+                                        <option value="Vehicle Received" <?php echo ($booking['status'] == 'Vehicle Received') ? 'selected' : ''; ?>>Vehicle Received</option>
+                                        <option value="Awaiting Parts" <?php echo ($booking['status'] == 'Awaiting Parts') ? 'selected' : ''; ?>>Awaiting Parts</option>
+                                        <option value="In Progress" <?php echo ($booking['status'] == 'In Progress') ? 'selected' : ''; ?>>In Progress</option>
+                                        <option value="Ready for Pickup" <?php echo ($booking['status'] == 'Ready for Pickup') ? 'selected' : ''; ?>>Ready for Pickup</option>
+                                        <option value="Completed" <?php echo ($booking['status'] == 'Completed') ? 'selected' : ''; ?>>Completed</option>
+                                    </select>
                                 </td>
                                 <td>
                                     <a href="../invoice/invoice.php?id=<?php echo $booking['id']; ?>" class="btn-view">
@@ -251,5 +264,24 @@ foreach ($bookings as $b) {
         </div>
     </main>
 
+    <script>
+        function updateStatus(bookingId, newStatus) {
+            fetch('update_status.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ booking_id: bookingId, new_status: newStatus })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                } else {
+                    alert('Error: ' + data.message);
+                    location.reload(); // Reload to revert the dropdown if it failed
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+    </script>
 </body>
 </html>
