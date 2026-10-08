@@ -16,11 +16,14 @@
 
 <?php
 session_start();
-require_once '../db_connect.php'; // Make sure db_connect is in the main folder!
+require_once '../db_connect.php';
 
  $is_logged_in = isset($_SESSION['user_email']);
  $userName = 'User';
  $initials = 'U';
+
+// NEW: Determine where the "Get Started" button should go
+ $get_started_link = $is_logged_in ? '../services/services.php' : '../loginPage/login.html';
 
 if ($is_logged_in) {
     $email = $_SESSION['user_email'];
@@ -46,7 +49,7 @@ if ($is_logged_in) {
 
     <nav class="nav-links" id="navLinks">
         <a href="home.php" class="nav-link" data-target="home">Home</a>
-        <a href="../loginPage/login.html" class="nav-link" id="getStartedLink">Get Started</a>
+        <a href="<?php echo $get_started_link; ?>" class="nav-link">Get Started</a>
         <a href="#about" class="nav-link" data-target="about">About&nbsp;Us</a>
         <a href="#contact" class="nav-link" data-target="contact">Contact&nbsp;Us</a>
         
@@ -55,9 +58,9 @@ if ($is_logged_in) {
             <div class="avatar-dropdown">
                 <div class="header-avatar" onclick="toggleDropdown()"><?php echo $initials; ?></div>
                 <div class="dropdown-menu" id="dropdownMenu">
-                    <a href="services/profile.php"><i class="fa-solid fa-user"></i> Profile</a>
-                    <a href="services/history.php"><i class="fa-solid fa-clock-rotate-left"></i> History</a>
-                    <a href="services/logout.php"><i class="fa-solid fa-arrow-right-from-bracket"></i> Logout</a>
+                    <a href="../services/profile.php"><i class="fa-solid fa-user"></i> Profile</a>
+                    <a href="../services/history.php"><i class="fa-solid fa-clock-rotate-left"></i> History</a>
+                    <a href="../logout.php"><i class="fa-solid fa-arrow-right-from-bracket"></i> Logout</a>
                 </div>
             </div>
         <?php else: ?>
@@ -80,7 +83,7 @@ if ($is_logged_in) {
       <h1>Every Vehicle Has a <span class="accent">Torque Point.</span></h1>
       <p class="tagline">Book, track and manage every service — from a routine oil change to a full engine overhaul — through one connected system built for precision.</p>
       <div class="hero-actions">
-        <a href="../loginPage/login.html" class="btn btn-primary">Get Started</a>
+        <a href="<?php echo $get_started_link; ?>" class="btn btn-primary">Get Started</a>
         <a href="#about" class="btn btn-ghost">Learn More</a>
       </div>
     </div>
