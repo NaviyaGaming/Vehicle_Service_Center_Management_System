@@ -137,20 +137,33 @@
             <div class="right-footer">
                 <span>© 2026 Torque Point Inc.</span>
                 <div class="links">
-                    <a href="#" class="tooltip-link">Privacy
-                    <span class="tooltip-text">Read our privacy policy and data protection terms.</span>
-                    </a>
-                    <a href="#" class="tooltip-link">Terms
-                     <span class="tooltip-text">View the terms and conditions of using TorquePoint.</span>
-                    </a>
-                    <a href="#" class="tooltip-link">Status
-                    <span class="tooltip-text">Check the real-time system status and uptime.</span>
-                    </a>
-                    </div>
+    <a href="#" class="tooltip-link" data-popup="privacy">Privacy
+        <span class="tooltip-text">Read our privacy policy and data protection terms.</span>
+    </a>
+    <a href="#" class="tooltip-link" data-popup="terms">Terms
+        <span class="tooltip-text">View the terms and conditions of using TorquePoint.</span>
+    </a>
+    <a href="#" class="tooltip-link" data-popup="status">Status
+        <span class="tooltip-text">Check the real-time system status and uptime.</span>
+    </a>
+</div>
             </div>
         </div>
     </div>
-
+     <div class="popup-overlay" id="popupOverlay">
+    <div class="popup-card" role="dialog" aria-modal="true" aria-labelledby="popupTitle">
+        <div class="popup-header">
+            <div class="popup-icon"><i id="popupIcon" class="fa-solid fa-shield-halved"></i></div>
+            <h3 id="popupTitle">Title</h3>
+            <button class="popup-close" id="popupClose" aria-label="Close">&times;</button>
+        </div>
+        <div class="popup-body" id="popupBody"></div>
+        <div class="popup-footer">
+            <span id="popupUpdated">Last updated: October 2026</span>
+            <button class="popup-ok" id="popupOk">Got it</button>
+        </div>
+    </div>
+</div>
     <div class="toast-container" id="toast-container"></div>
 
     <!-- Google Identity Services -->

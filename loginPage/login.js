@@ -134,3 +134,88 @@ window.addEventListener('load', () => {
         }
     }, 200);
 });
+
+// ===== Info popups: Privacy / Terms / Status =====
+const popupData = {
+    privacy: {
+        title: 'Privacy Policy',
+        icon: 'fa-shield-halved',
+        updated: 'Last updated: October 2026',
+        html: `
+            <h4>What we collect</h4>
+            <ul>
+                <li>Your name, email address and phone number</li>
+                <li>Vehicle details (make, model, plate number)</li>
+                <li>Your booking, service and invoice history</li>
+            </ul>
+            <h4>How we use it</h4>
+            <ul>
+                <li>To manage your bookings and service records</li>
+                <li>To send confirmations, invoices and service reminders</li>
+                <li>To improve our service center operations</li>
+            </ul>
+            <h4>Payments &amp; sign-in</h4>
+            <p>Card payments are handled securely by Stripe. We never store your card number. If you use Google sign-in, we only receive your name and email.</p>
+            <h4>Your data</h4>
+            <p>We do not sell your personal data. You can request a copy or deletion of your account data by contacting the service center.</p>`
+    },
+    terms: {
+        title: 'Terms & Conditions',
+        icon: 'fa-file-contract',
+        updated: 'Last updated: October 2026',
+        html: `
+            <h4>Your account</h4>
+            <p>Keep your login details private and provide accurate vehicle and contact information. You are responsible for activity under your account.</p>
+            <h4>Bookings</h4>
+            <ul>
+                <li>Bookings are confirmed once you receive a confirmation email</li>
+                <li>Please cancel or reschedule before your appointment time so others can use the slot</li>
+                <li>Arriving late may require us to rebook your service</li>
+            </ul>
+            <h4>Pricing &amp; payments</h4>
+            <p>Quoted prices are estimates. If extra repairs are needed, we will contact you for approval before any additional work begins. Invoices are payable at the time of service completion.</p>
+            <h4>Liability</h4>
+            <p>We take care of every vehicle, but we are not responsible for personal items left inside the vehicle.</p>`
+    },
+    status: {
+        title: 'System Status',
+        icon: 'fa-signal',
+        updated: 'Checked just now',
+        html: `
+            <div class="status-banner"><i class="fa-solid fa-circle-check"></i> All systems operational</div>
+            <div class="status-row"><span>Customer portal</span><span class="status-pill"><span class="status-dot"></span>Operational</span></div>
+            <div class="status-row"><span>Online booking</span><span class="status-pill"><span class="status-dot"></span>Operational</span></div>
+            <div class="status-row"><span>Payments (Stripe)</span><span class="status-pill"><span class="status-dot"></span>Operational</span></div>
+            <div class="status-row"><span>Invoice &amp; PDF generation</span><span class="status-pill"><span class="status-dot"></span>Operational</span></div>
+            <div class="status-row"><span>Email notifications</span><span class="status-pill"><span class="status-dot"></span>Operational</span></div>
+            <div class="status-row"><span>Admin dashboard</span><span class="status-pill"><span class="status-dot"></span>Operational</span></div>`
+    }
+};
+
+const overlay = document.getElementById('popupOverlay');
+
+function openPopup(key) {
+    const data = popupData[key];
+    if (!data) return;
+    document.getElementById('popupTitle').textContent = data.title;
+    document.getElementById('popupIcon').className = 'fa-solid ' + data.icon;
+    document.getElementById('popupBody').innerHTML = data.html;
+    document.getElementById('popupUpdated').textContent = data.updated;
+    overlay.classList.add('show');
+}
+
+function closePopup() {
+    overlay.classList.remove('show');
+}
+
+document.querySelectorAll('[data-popup]').forEach(el => {
+    el.addEventListener('click', e => {
+        e.preventDefault();
+        openPopup(el.dataset.popup);
+    });
+});
+
+document.getElementById('popupClose').addEventListener('click', closePopup);
+document.getElementById('popupOk').addEventListener('click', closePopup);
+overlay.addEventListener('click', e => { if (e.target === overlay) closePopup(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closePopup(); });
