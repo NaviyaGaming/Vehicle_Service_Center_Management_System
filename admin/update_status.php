@@ -1,8 +1,13 @@
 <?php
 session_start();
 require_once '../db_connect.php';
+<<<<<<< HEAD
 
 // Include PHPMailer
+=======
+// Include PHPMailer
+//check 2
+>>>>>>> refs/rewritten/main-2
 require_once '../PHPMailer/src/PHPMailer.php';
 require_once '../PHPMailer/src/SMTP.php';
 require_once '../PHPMailer/src/Exception.php';
@@ -38,6 +43,7 @@ if (!in_array($new_status, $allowed_statuses)) {
     exit;
 }
 
+<<<<<<< HEAD
 // 3. MECHANIC ASSIGNMENT LOGIC
 
 // If starting a job, assign a mechanic
@@ -90,10 +96,20 @@ else {
     $alert_message = "Status updated to '$new_status'.";
 }
 
+=======
+// 3. Update the database
+ $updateStmt = $pdo->prepare("UPDATE bookings SET status = ? WHERE id = ?");
+ $updateStmt->execute([$new_status, $booking_id]);
+
+>>>>>>> refs/rewritten/main-2
 // 4. Email Notification Logic (Exclude 'Completed' and 'Paid')
  $notify_stages = ['Vehicle Received', 'Awaiting Parts', 'In Progress', 'Ready for Pickup'];
 
 if (in_array($new_status, $notify_stages)) {
+<<<<<<< HEAD
+=======
+    // Fetch booking details and user email
+>>>>>>> refs/rewritten/main-2
     $stmt = $pdo->prepare("SELECT b.vehicle_details, b.user_email FROM bookings b WHERE b.id = ?");
     $stmt->execute([$booking_id]);
     $details = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -101,6 +117,11 @@ if (in_array($new_status, $notify_stages)) {
     if ($details) {
         $vehicle = $details['vehicle_details'];
         $user_email = $details['user_email'];
+<<<<<<< HEAD
+=======
+
+        // Custom message for each stage
+>>>>>>> refs/rewritten/main-2
         $messages = [
             'Vehicle Received' => "Your $vehicle has been received at our service center. We will begin work soon!",
             'Awaiting Parts' => "We are currently awaiting parts for your $vehicle. We will notify you when work resumes.",
@@ -109,6 +130,10 @@ if (in_array($new_status, $notify_stages)) {
         ];
         $email_body = $messages[$new_status];
 
+<<<<<<< HEAD
+=======
+        // Send Email via PHPMailer
+>>>>>>> refs/rewritten/main-2
         $mail = new PHPMailer(true);
         try {
             $mail->isSMTP();
@@ -133,10 +158,19 @@ if (in_array($new_status, $notify_stages)) {
             ";
             $mail->send();
         } catch (Exception $e) {
+<<<<<<< HEAD
+=======
+            // Log error but don't break the status update
+>>>>>>> refs/rewritten/main-2
             error_log("Status update email failed: {$mail->ErrorInfo}");
         }
     }
 }
 
+<<<<<<< HEAD
 echo json_encode(['success' => true, 'message' => $alert_message]);
 ?>
+=======
+echo json_encode(['success' => true, 'message' => "Status updated to '$new_status'."]);
+?>
+>>>>>>> refs/rewritten/main-2
