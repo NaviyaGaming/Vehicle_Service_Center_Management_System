@@ -426,19 +426,9 @@ window.proceedToPayment = function() {
     const timeElement = document.getElementById("summaryTime");
     const priceElement = document.getElementById("summaryPrice");
     const mileageInput = document.getElementById("vehicleMileage");
-    
-    // NEW: Get Date and Time inputs
-    const bookingDateInput = document.getElementById("bookingDate");
-    const bookingTimeInput = document.getElementById("bookingTime");
 
     if (!vehicleElement || !serviceElement || !timeElement || !priceElement) {
         alert("Order information could not be found.");
-        return;
-    }
-
-    // NEW: Validate Date and Time
-    if (!bookingDateInput.value || !bookingTimeInput.value) {
-        alert("Please select a preferred Date and Time for your service.");
         return;
     }
 
@@ -447,16 +437,13 @@ window.proceedToPayment = function() {
     const time = timeElement.innerText;
     const price = priceElement.innerText;
     const mileage = mileageInput ? mileageInput.value : 0;
-    
-    // NEW: Get values
-    const bDate = bookingDateInput.value;
-    const bTime = bookingTimeInput.value;
 
     if (!vehicle || vehicle === "N/A" || !service || service === "N/A") {
         alert("Please select a service first.");
         return;
     }
 
+    // Save the booking (without date/time) and redirect to the Calendar Page
     fetch("../invoice/save_booking.php", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -465,9 +452,7 @@ window.proceedToPayment = function() {
             service: service,
             time: time,
             price: price,
-            mileage: mileage,
-            booking_date: bDate, // Send Date
-            booking_time: bTime  // Send Time
+            mileage: mileage
         })
     })
     .then(function(response) {
@@ -475,7 +460,8 @@ window.proceedToPayment = function() {
     })
     .then(function(data) {
         if (data.success) {
-            window.location.href = `../invoice/invoice.php?id=${data.booking_id}`;
+            // Redirect to the huge Calendar page!
+            window.location.href = `booking_calendar.php?id=${data.booking_id}`;
         } else {
             alert("Error saving booking: " + data.message);
         }
