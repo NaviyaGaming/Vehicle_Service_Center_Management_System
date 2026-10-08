@@ -22,7 +22,9 @@ if (!isset($_SESSION['user_email'])) {
  $totalBookings = count($bookings);
  $totalSpent = 0;
 foreach ($bookings as $b) {
-    if ($b['status'] === 'Paid') {
+    // Updated to count all paid statuses for accurate total spent
+    $paid_statuses = ['Paid', 'Vehicle Received', 'Awaiting Parts', 'In Progress', 'Ready for Pickup', 'Completed'];
+    if (in_array($b['status'], $paid_statuses)) {
         $priceNum = floatval(str_replace(['Rs.', ' ', ','], '', $b['price']));
         $totalSpent += $priceNum;
     }
@@ -59,10 +61,15 @@ if (strpos($name, ' ') !== false) {
         .brand { display: flex; align-items: center; gap: 12px; text-decoration: none; color: inherit; }
         .brand img { width: 40px; height: 40px; border-radius: 8px; }
         .brand h2 { font-family: 'Montserrat', sans-serif; font-size: 24px; } .brand span { color: var(--primary); }
-        .nav-actions { display: flex; gap: 24px; align-items: center; }
-        .nav-actions a { text-decoration: none; color: var(--text-muted); font-size: 14px; font-weight: 500; }
-        .nav-actions a:hover { color: var(--primary); }
-        .nav-actions .logout { color: var(--danger); font-weight: 600; }
+
+        /* Avatar Dropdown CSS */
+        .avatar-dropdown { position: relative; display: flex; align-items: center; margin-left: 10px; }
+        .header-avatar { width: 40px; height: 40px; background: var(--primary); color: var(--surface); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: 'Montserrat', sans-serif; font-size: 16px; font-weight: 700; cursor: pointer; border: 2px solid transparent; transition: 0.2s; }
+        .header-avatar:hover { border-color: var(--primary-hover); }
+        .dropdown-menu { position: absolute; top: 120%; right: 0; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); min-width: 160px; z-index: 1000; display: none; flex-direction: column; overflow: hidden; }
+        .dropdown-menu a { padding: 12px 16px; text-decoration: none; color: var(--text-main); font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--border); transition: 0.2s; }
+        .dropdown-menu a:last-child { border-bottom: none; }
+        .dropdown-menu a:hover { background: var(--bg-main); color: var(--primary); }
 
         .container { max-width: 1000px; margin: 40px auto; padding: 0 20px; display: grid; grid-template-columns: 1fr 1.5fr; gap: 30px; }
         @media (max-width: 768px) { .container { grid-template-columns: 1fr; } }
@@ -104,11 +111,15 @@ if (strpos($name, ' ') !== false) {
             <img src="logo.png" alt="Logo" onerror="this.style.display='none'">
             <h2>Torque<span>Point</span></h2>
         </a>
-        <div class="nav-actions">
-            <a href="services.php">Book Service</a>
-            <a href="history.php">History</a>
-            <a href="profile.php" style="color: var(--primary); font-weight:600;">Profile</a>
-            <a href="logout.php" class="logout">Logout</a>
+        
+        <!-- Avatar Dropdown -->
+        <div class="avatar-dropdown">
+            <div class="header-avatar" onclick="toggleDropdown()"><?php echo $initials; ?></div>
+            <div class="dropdown-menu" id="dropdownMenu">
+                <a href="profile.php"><i class="fa-solid fa-user"></i> Profile</a>
+                <a href="history.php"><i class="fa-solid fa-clock-rotate-left"></i> History</a>
+                <a href="logout.php"><i class="fa-solid fa-arrow-right-from-bracket"></i> Logout</a>
+            </div>
         </div>
     </div>
 
@@ -163,7 +174,7 @@ if (strpos($name, ' ') !== false) {
 
     <div class="toast" id="toast"></div>
 
-        <script>
+    <script>
         function enableEdit() {
             // Remove readonly from inputs
             document.getElementById('name').readOnly = false;
@@ -183,14 +194,14 @@ if (strpos($name, ' ') !== false) {
         }
 
         // Handle Profile Update (when Save Changes is clicked)
-document.getElementById('profileForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    const btn = document.getElementById('btnContainer').querySelector('button[type="submit"]');
-    if (btn) {
-        btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Saving...';
-        btn.disabled = true;
-    }
-    // ... leave the rest of your fetch code exactly as it is ...
+        document.getElementById('profileForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btnContainer').querySelector('button[type="submit"]');
+            if (btn) {
+                btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Saving...';
+                btn.disabled = true;
+            }
+            
             fetch('update_profile.php?action=update_profile', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -208,6 +219,18 @@ document.getElementById('profileForm').addEventListener('submit', function(e) {
                 setTimeout(() => location.reload(), 1500); // Reload to lock inputs again
             });
         });
+
+        // Avatar Dropdown Toggle
+        function toggleDropdown() {
+            const menu = document.getElementById('dropdownMenu');
+            menu.style.display = (menu.style.display === 'flex') ? 'none' : 'flex';
+        }
+        window.onclick = function(event) {
+            if (!event.target.matches('.header-avatar')) {
+                const menu = document.getElementById('dropdownMenu');
+                if (menu && menu.style.display === 'flex') { menu.style.display = 'none'; }
+            }
+        }
     </script>
 </body>
 </html>

@@ -1,13 +1,23 @@
 <?php
 session_start();
+require_once '../db_connect.php';
 
-// If user is not logged in, redirect them back to login
 if (!isset($_SESSION['user_email'])) {
-    header("Location: login.html");
+    header("Location: ../loginPage/login.html");
     exit();
 }
 
  $userEmail = $_SESSION['user_email'];
+ $stmt = $pdo->prepare("SELECT name FROM users WHERE email = ?");
+ $stmt->execute([$userEmail]);
+ $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+ $userName = $user['name'] ?? $userEmail;
+ $initials = strtoupper(substr($userName, 0, 1));
+if (strpos($userName, ' ') !== false) {
+    $parts = explode(' ', $userName);
+    $initials = strtoupper(substr($parts[0], 0, 1) . substr(end($parts), 0, 1));
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -21,12 +31,22 @@ if (!isset($_SESSION['user_email'])) {
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="services.css">
+    
+    <!-- Avatar Dropdown CSS -->
+    <style>
+        .avatar-dropdown { position: relative; display: flex; align-items: center; margin-left: 10px; }
+        .header-avatar { width: 40px; height: 40px; background: var(--primary); color: var(--surface); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: 'Montserrat', sans-serif; font-size: 16px; font-weight: 700; cursor: pointer; border: 2px solid transparent; transition: 0.2s; }
+        .header-avatar:hover { border-color: var(--primary-hover); }
+        .dropdown-menu { position: absolute; top: 120%; right: 0; background: var(--surface); border: 1px solid var(--border-color); border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); min-width: 160px; z-index: 1000; display: none; flex-direction: column; overflow: hidden; }
+        .dropdown-menu a { padding: 12px 16px; text-decoration: none; color: var(--text-main); font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid var(--border-color); transition: 0.2s; }
+        .dropdown-menu a:last-child { border-bottom: none; }
+        .dropdown-menu a:hover { background: var(--bg-main); color: var(--primary); }
+    </style>
 </head>
 <body>
 
     <!-- HEADER -->
     <header class="top-header">
-    
         <a href="../home/home.php" class="brand" style="text-decoration: none; color: inherit;">
             <div class="brand-icon">
                 <img src="../logo.png" alt="Logo" class="brand-logo-img" onerror="this.style.display='none'">
@@ -36,11 +56,14 @@ if (!isset($_SESSION['user_email'])) {
             </div>
         </a>
         
-        <!-- Updated Header Link to show User Email and Logout -->
-        <div class="header-link">
-            <i class="fa-solid fa-user"></i>
-            <?php echo htmlspecialchars($userEmail); ?>
-            <a href="../logout.php" style="margin-left: 15px; color: var(--danger); text-decoration: none; font-weight: 600;">Logout</a>
+        <!-- Avatar and User Name -->
+        <div class="avatar-dropdown">
+            <div class="header-avatar" onclick="toggleDropdown()"><?php echo $initials; ?></div>
+            <div class="dropdown-menu" id="dropdownMenu">
+                <a href="profile.php"><i class="fa-solid fa-user"></i> Profile</a>
+                <a href="history.php"><i class="fa-solid fa-clock-rotate-left"></i> History</a>
+                <a href="../logout.php"><i class="fa-solid fa-arrow-right-from-bracket"></i> Logout</a>
+            </div>
         </div>
     </header>
 
@@ -92,7 +115,7 @@ if (!isset($_SESSION['user_email'])) {
                 </select>
             </div>
 
-            <!-- NEW: Mileage Input -->
+            <!-- Mileage Input -->
             <div class="form-group">
                 <label for="vehicleMileage">5. Mileage (km)</label>
                 <input type="number" id="vehicleMileage" placeholder="e.g., 45000" min="0">
@@ -146,7 +169,8 @@ if (!isset($_SESSION['user_email'])) {
     </footer>
 
     <script src="services.js"></script>
-        <!-- Tawk.to Live Chat Script -->
+    
+    <!-- Tawk.to Live Chat Script -->
     <script type="text/javascript">
     var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
     (function(){
@@ -159,7 +183,18 @@ if (!isset($_SESSION['user_email'])) {
     })();
     </script>
 
-</body>
-</html>
+    <!-- Avatar Dropdown Script -->
+    <script>
+        function toggleDropdown() {
+            const menu = document.getElementById('dropdownMenu');
+            menu.style.display = (menu.style.display === 'flex') ? 'none' : 'flex';
+        }
+        window.onclick = function(event) {
+            if (!event.target.matches('.header-avatar')) {
+                const menu = document.getElementById('dropdownMenu');
+                if (menu && menu.style.display === 'flex') { menu.style.display = 'none'; }
+            }
+        }
+    </script>
 </body>
 </html>
