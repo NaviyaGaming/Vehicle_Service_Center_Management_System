@@ -2,7 +2,7 @@
 session_start();
 header('Content-Type: application/json');
 
-// Go up one folder to find db_connect.php in the main groupProject folder
+// Go up one folder to find db_connect.php in the main Vehicle_Service_Center_Management_System folder
 require_once '../db_connect.php';
 
  $input = file_get_contents('php://input');

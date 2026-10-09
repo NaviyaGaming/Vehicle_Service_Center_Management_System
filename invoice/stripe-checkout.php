@@ -56,8 +56,8 @@ curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query([
     ]],
     'mode' => 'payment',
     // After success, go to this URL to update our database and send email
-    'success_url' => 'http://localhost/groupProject/invoice/payment-success.php?booking_id=' . $booking_id,
-    'cancel_url' => 'http://localhost/groupProject/invoice/invoice.php?id=' . $booking_id,
+    'success_url' => 'http://localhost/Vehicle_Service_Center_Management_System/invoice/payment-success.php?booking_id=' . $booking_id,
+    'cancel_url' => 'http://localhost/Vehicle_Service_Center_Management_System/invoice/invoice.php?id=' . $booking_id,
 ]));
 
  $result = curl_exec($ch);
