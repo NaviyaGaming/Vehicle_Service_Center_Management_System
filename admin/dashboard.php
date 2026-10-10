@@ -311,11 +311,15 @@ foreach ($allBookings as $b) {
             <a href="export_csv.php?<?php echo $csvQuery; ?>" class="btn-export">
                 <i class="fa-solid fa-file-csv"></i> Export CSV
             </a>
-                        <a href="manage_calendar.php" class="btn-export" style="background: var(--danger); color: white;">
+            <a href="manage_calendar.php" class="btn-export" style="background: var(--danger); color: white;">
                 <i class="fa-solid fa-calendar-xmark"></i> Manage Calendar
             </a>
             <a href="manage_mechanics.php" class="btn-export" style="background: var(--primary); color: white;">
                 <i class="fa-solid fa-wrench"></i> Manage Mechanics
+            </a>
+            <!-- CUSTOMER MESSAGES BUTTON -->
+            <a href="admin_chat.php" class="btn-export" style="background: #10B981; color: white;">
+                <i class="fa-solid fa-comments"></i> Customer Messages
             </a>
         </div>
 

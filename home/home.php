@@ -1,3 +1,40 @@
+<?php
+// Moved to the very top so session_start() runs before any HTML is sent.
+session_start();
+require_once '../db_connect.php';
+
+$is_logged_in = isset($_SESSION['user_email']);
+$userName = 'User';
+$initials = 'U';
+
+// Pre-fill values for the contact form (only filled when the customer is logged in)
+$prefill_first = '';
+$prefill_last  = '';
+$prefill_email = '';
+
+// Determine where the "Get Started" button should go
+$get_started_link = $is_logged_in ? '../services/services.php' : '../loginPage/login.html';
+
+if ($is_logged_in) {
+    $email = $_SESSION['user_email'];
+    $stmt = $pdo->prepare("SELECT name FROM users WHERE email = ?");
+    $stmt->execute([$email]);
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    $userName = $user['name'] ?? $email;
+    $initials = strtoupper(substr($userName, 0, 1));
+    if (strpos($userName, ' ') !== false) {
+        $parts = explode(' ', $userName);
+        $initials = strtoupper(substr($parts[0], 0, 1) . substr(end($parts), 0, 1));
+    }
+
+    // Split the saved full name into first / last name for the contact form
+    $nameParts     = explode(' ', trim($userName), 2);
+    $prefill_first = $nameParts[0] ?? '';
+    $prefill_last  = $nameParts[1] ?? '';
+    $prefill_email = $email;
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10,35 +47,10 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link rel="stylesheet" href="home.css">
+<link rel="stylesheet" href="home-chat.css">
 <link rel="icon" type="image/png" href="../logo.png">
 </head>
 <body>
-
-<?php
-session_start();
-require_once '../db_connect.php';
-
- $is_logged_in = isset($_SESSION['user_email']);
- $userName = 'User';
- $initials = 'U';
-
-// NEW: Determine where the "Get Started" button should go
- $get_started_link = $is_logged_in ? '../services/services.php' : '../loginPage/login.html';
-
-if ($is_logged_in) {
-    $email = $_SESSION['user_email'];
-    $stmt = $pdo->prepare("SELECT name FROM users WHERE email = ?");
-    $stmt->execute([$email]);
-    $user = $stmt->fetch(PDO::FETCH_ASSOC);
-    
-    $userName = $user['name'] ?? $email;
-    $initials = strtoupper(substr($userName, 0, 1));
-    if (strpos($userName, ' ') !== false) {
-        $parts = explode(' ', $userName);
-        $initials = strtoupper(substr($parts[0], 0, 1) . substr(end($parts), 0, 1));
-    }
-}
-?>
 
 <!-- ============ NAVBAR ============ -->
 <header class="navbar" id="navbar">
@@ -180,7 +192,7 @@ if ($is_logged_in) {
       <div class="contact-info reveal">
         <p class="eyebrow">Get in Touch</p>
         <h2>Bring Your Vehicle to Torque Point</h2>
-        <p>Have a question about a booking or need service today? Reach out — our team responds within one business day.</p>
+        <p>Have a question about a booking or need service today? Send us a message and chat with our team live.</p>
 
         <div class="info-row">
           <div class="feature-icon"><i class="fa-solid fa-location-dot"></i></div>
@@ -194,7 +206,7 @@ if ($is_logged_in) {
 
         <div class="info-row">
           <div class="feature-icon"><i class="fa-solid fa-envelope"></i></div>
-          <div><h4>Email Us</h4><a href="pointtorque@gmail.com">pointtorque@gmail.com</a></div>
+          <div><h4>Email Us</h4><a href="mailto:pointtorque@gmail.com">pointtorque@gmail.com</a></div>
         </div>
 
         <div class="social-row">
@@ -204,19 +216,43 @@ if ($is_logged_in) {
         </div>
       </div>
 
-      <form class="contact-form reveal" onsubmit="event.preventDefault(); alert('Thanks — your message has been noted. (Demo form: connect to backend to send.)');">
-        <div class="form-row">
-          <div class="field"><label for="fname">First name</label><input id="fname" type="text" placeholder="FirstName" required></div>
-          <div class="field"><label for="lname">Last name</label><input id="lname" type="text" placeholder="SecondName" required></div>
+      <div class="contact-side reveal">
+
+        <!-- 1) Contact form: sends the first message and opens the chat -->
+        <form class="contact-form" id="contactForm" novalidate>
+          <div class="form-row">
+            <div class="field"><label for="fname">First name</label><input id="fname" name="first_name" type="text" maxlength="60" placeholder="FirstName" value="<?php echo htmlspecialchars($prefill_first); ?>" required></div>
+            <div class="field"><label for="lname">Last name</label><input id="lname" name="last_name" type="text" maxlength="60" placeholder="SecondName" value="<?php echo htmlspecialchars($prefill_last); ?>" required></div>
+          </div>
+          <div class="form-row">
+            <div class="field full"><label for="email">Email</label><input id="email" name="email" type="email" maxlength="150" placeholder="Enter your email" value="<?php echo htmlspecialchars($prefill_email); ?>" required></div>
+          </div>
+          <div class="form-row">
+            <div class="field full"><label for="msg">Message</label><textarea id="msg" name="message" maxlength="2000" placeholder="Tell us about your vehicle or the service you need..." required></textarea></div>
+          </div>
+          <input class="hp-field" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
+          <p class="form-error" id="formError" role="alert"></p>
+          <button type="submit" class="btn btn-primary" id="sendBtn">Send Message</button>
+        </form>
+
+        <!-- 2) Live chat: replaces the form after the first message is sent -->
+        <div class="contact-form chat-panel" id="chatPanel" hidden>
+          <div class="chat-head">
+            <div>
+              <h3>Your conversation</h3>
+              <span class="chat-state" id="chatState">Connected</span>
+            </div>
+            <button type="button" class="chat-new" id="chatNew">New message</button>
+          </div>
+          <div class="chat-log" id="chatLog" aria-live="polite"></div>
+          <form class="chat-composer" id="chatForm">
+            <input id="chatInput" type="text" maxlength="2000" placeholder="Type a message..." autocomplete="off">
+            <button type="submit" class="btn btn-primary" id="chatSend">Send</button>
+          </form>
+          <p class="chat-note" id="chatClosed" hidden>This conversation has been closed. Use "New message" to contact us again.</p>
         </div>
-        <div class="form-row">
-          <div class="field full"><label for="email">Email</label><input id="email" type="email" placeholder="Enter your email" required></div>
-        </div>
-        <div class="form-row">
-          <div class="field full"><label for="msg">Message</label><textarea id="msg" placeholder="Tell us about your vehicle or the service you need..." required></textarea></div>
-        </div>
-        <button type="submit" class="btn btn-primary">Send Message</button>
-      </form>
+
+      </div>
     </div>
 
     <div class="footer-bottom">
@@ -225,6 +261,11 @@ if ($is_logged_in) {
     </div>
   </footer>
 
+<script>
+  // Path from this page to the chat api.php. Change it if your folder has a different name.
+  window.CHAT_API = '../admin/api.php';
+</script>
 <script src="home.js"></script>
+<script src="home-chat.js"></script>
 </body>
 </html>
