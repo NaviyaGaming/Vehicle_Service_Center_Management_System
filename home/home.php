@@ -48,6 +48,7 @@ if ($is_logged_in) {
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link rel="stylesheet" href="home.css">
 <link rel="stylesheet" href="home-chat.css">
+<link rel="stylesheet" href="floating-chat.css">
 <link rel="icon" type="image/png" href="../logo.png">
 </head>
 <body>
@@ -215,44 +216,6 @@ if ($is_logged_in) {
           <a href="#" aria-label="Twitter"><i class="fa-brands fa-twitter"></i></a>
         </div>
       </div>
-
-      <div class="contact-side reveal">
-
-        <!-- 1) Contact form: sends the first message and opens the chat -->
-        <form class="contact-form" id="contactForm" novalidate>
-          <div class="form-row">
-            <div class="field"><label for="fname">First name</label><input id="fname" name="first_name" type="text" maxlength="60" placeholder="FirstName" value="<?php echo htmlspecialchars($prefill_first); ?>" required></div>
-            <div class="field"><label for="lname">Last name</label><input id="lname" name="last_name" type="text" maxlength="60" placeholder="SecondName" value="<?php echo htmlspecialchars($prefill_last); ?>" required></div>
-          </div>
-          <div class="form-row">
-            <div class="field full"><label for="email">Email</label><input id="email" name="email" type="email" maxlength="150" placeholder="Enter your email" value="<?php echo htmlspecialchars($prefill_email); ?>" required></div>
-          </div>
-          <div class="form-row">
-            <div class="field full"><label for="msg">Message</label><textarea id="msg" name="message" maxlength="2000" placeholder="Tell us about your vehicle or the service you need..." required></textarea></div>
-          </div>
-          <input class="hp-field" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
-          <p class="form-error" id="formError" role="alert"></p>
-          <button type="submit" class="btn btn-primary" id="sendBtn">Send Message</button>
-        </form>
-
-        <!-- 2) Live chat: replaces the form after the first message is sent -->
-        <div class="contact-form chat-panel" id="chatPanel" hidden>
-          <div class="chat-head">
-            <div>
-              <h3>Your conversation</h3>
-              <span class="chat-state" id="chatState">Connected</span>
-            </div>
-            <button type="button" class="chat-new" id="chatNew">New message</button>
-          </div>
-          <div class="chat-log" id="chatLog" aria-live="polite"></div>
-          <form class="chat-composer" id="chatForm">
-            <input id="chatInput" type="text" maxlength="2000" placeholder="Type a message..." autocomplete="off">
-            <button type="submit" class="btn btn-primary" id="chatSend">Send</button>
-          </form>
-          <p class="chat-note" id="chatClosed" hidden>This conversation has been closed. Use "New message" to contact us again.</p>
-        </div>
-
-      </div>
     </div>
 
     <div class="footer-bottom">
@@ -267,5 +230,9 @@ if ($is_logged_in) {
 </script>
 <script src="home.js"></script>
 <script src="home-chat.js"></script>
+<script>
+  window.CHAT_API = '../admin/api.php';
+</script>
+<script src="floating-chat.js"></script>
 </body>
 </html>

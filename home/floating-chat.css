@@ -1,0 +1,89 @@
+/* Floating Chat Widget Styles */
+.floating-chat-btn {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    width: 56px;
+    height: 56px;
+    background: var(--primary, #0052CC);
+    color: #ffffff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    box-shadow: 0 4px 12px rgba(0, 82, 204, 0.3);
+    cursor: pointer;
+    z-index: 9999;
+    border: none;
+    transition: transform 0.2s ease, background 0.2s ease;
+}
+.floating-chat-btn:hover {
+    background: var(--primary-hover, #0042A5);
+    transform: scale(1.08);
+}
+
+/* Modal Overlay & Card Popup */
+.chat-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(3px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    padding: 20px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease;
+}
+.chat-modal-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.chat-modal-card {
+    background: var(--surface, #FFFFFF);
+    width: 100%;
+    max-width: 440px;
+    border-radius: 12px;
+    border: 1px solid var(--border-color, #E2E8F0);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transform: translateY(15px);
+    transition: transform 0.25s ease;
+}
+.chat-modal-overlay.active .chat-modal-card {
+    transform: translateY(0);
+}
+
+.chat-modal-header {
+    padding: 16px 20px;
+    background: var(--bg-main, #F8FAFC);
+    border-bottom: 1px solid var(--border-color, #E2E8F0);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.chat-modal-header h3 {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-main, #0F172A);
+    margin: 0;
+}
+.chat-modal-close {
+    background: none;
+    border: none;
+    font-size: 18px;
+    color: var(--text-muted, #64748B);
+    cursor: pointer;
+}
+.chat-modal-close:hover { color: var(--text-main, #0F172A); }
+
+.chat-modal-body {
+    padding: 20px;
+}

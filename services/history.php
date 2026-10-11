@@ -37,6 +37,8 @@ if (strpos($userName, ' ') !== false) {
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../home/home-chat.css">
+<link rel="stylesheet" href="../home/floating-chat.css">
     <style>
         :root {
             --primary: #0052CC; --primary-hover: #0042A5; --bg-main: #F8FAFC; --surface: #FFFFFF;
@@ -81,13 +83,6 @@ if (strpos($userName, ' ') !== false) {
         .status-paid { background: rgba(16, 185, 129, 0.1); color: var(--success); }
         .status-pending { background: rgba(245, 158, 11, 0.1); color: var(--warning); }
         .status-cancelled { background: rgba(100, 116, 139, 0.1); color: var(--text-muted); }
-
-        .action-group { display: flex; gap: 8px; }
-        .btn-view { background: transparent; color: var(--primary); border: 1px solid var(--border-color); padding: 8px 14px; border-radius: 6px; text-decoration: none; font-size: 13px; font-weight: 600; transition: 0.2s; display: inline-block; }
-        .btn-view:hover { background: var(--bg-main); border-color: var(--primary); }
-        
-        .btn-cancel { background: transparent; color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.3); padding: 8px 14px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; transition: 0.2s; }
-        .btn-cancel:hover { background: var(--danger); color: white; border-color: var(--danger); }
 
         .empty-state { text-align: center; padding: 60px 20px; }
         .empty-state i { font-size: 40px; color: var(--border-color); margin-bottom: 16px; }
@@ -169,7 +164,6 @@ if (strpos($userName, ' ') !== false) {
                             <th>SERVICE TYPE</th>
                             <th>PRICE</th>
                             <th>STATUS</th>
-                            <th>ACTION</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -218,19 +212,6 @@ if (strpos($userName, ' ') !== false) {
                                         }
                                     ?>
                                 </td>
-                                <td>
-                                    <div class="action-group">
-                                        <a href="../invoice/invoice.php?id=<?php echo $booking['id']; ?>" class="btn-view">
-                                            <i class="fa-solid fa-eye"></i> View
-                                        </a>
-                                        
-                                        <?php if ($booking['status'] === 'Pending Payment'): ?>
-                                            <button class="btn-cancel" onclick="cancelBooking(<?php echo $booking['id']; ?>)">
-                                                Cancel
-                                            </button>
-                                        <?php endif; ?>
-                                    </div>
-                                </td>
                             </tr>
                         <?php endforeach; ?>
                     </tbody>
@@ -241,51 +222,7 @@ if (strpos($userName, ' ') !== false) {
 
     <div class="toast" id="toast"></div>                                  
     
-    <!-- Tawk.to Live Chat Script -->
-    <script type="text/javascript">
-    var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
-    (function(){
-    var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
-    s1.async=true;
-    s1.src='https://embed.tawk.to/6abf9188df2d5634c099c01d/1k3u5101i';
-    s1.charset='UTF-8';
-    s1.setAttribute('crossorigin','*');
-    s0.parentNode.insertBefore(s1,s0);
-    })();
-    </script>
-
     <script>
-        function cancelBooking(bookingId) {
-            if (!confirm("Are you sure you want to cancel this booking?")) {
-                return;
-            }
-
-            fetch('cancel_booking.php', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ booking_id: bookingId })
-            })
-            .then(res => res.json())
-            .then(data => {
-                const toast = document.getElementById('toast');
-                toast.innerText = data.message;
-                toast.style.display = 'block';
-                
-                if (data.success) {
-                    toast.style.background = '#10B981'; // Green for success
-                    // Reload the page after 1.5 seconds to show updated status
-                    setTimeout(() => location.reload(), 1500);
-                } else {
-                    toast.style.background = '#EF4444'; // Red for error
-                    setTimeout(() => toast.style.display = 'none', 3000);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('An error occurred while cancelling the booking.');
-            });
-        }
-
         // Avatar Dropdown Toggle
         function toggleDropdown() {
             const menu = document.getElementById('dropdownMenu');
@@ -298,5 +235,9 @@ if (strpos($userName, ' ') !== false) {
             }
         }
     </script>
+    <script>
+  window.CHAT_API = '../admin/api.php';
+</script>
+<script src="../home/floating-chat.js"></script>
 </body>
 </html>

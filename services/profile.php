@@ -52,6 +52,8 @@ if (strpos($name, ' ') !== false) {
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../home/home-chat.css">
+<link rel="stylesheet" href="../home/floating-chat.css">
     <style>
         :root { --primary: #0052CC; --primary-hover: #0042A5; --bg-main: #F8FAFC; --surface: #FFFFFF; --text-main: #0F172A; --text-muted: #64748B; --success: #10B981; --danger: #EF4444; --border: #E2E8F0; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -232,5 +234,9 @@ if (strpos($name, ' ') !== false) {
             }
         }
     </script>
+    <script>
+  window.CHAT_API = '../admin/api.php';
+</script>
+<script src="../home/floating-chat.js"></script>
 </body>
 </html>
