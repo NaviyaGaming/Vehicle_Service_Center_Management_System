@@ -207,8 +207,6 @@ foreach ($allBookings as $b) {
         .data-table tr:hover td { background: var(--bg-main); }
         .id-mono { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--text-muted); }
         .text-muted { color: var(--text-muted); font-size: 13px; }
-        .btn-view { background: transparent; color: var(--primary); border: 1px solid var(--border-color); padding: 8px 14px; border-radius: 6px; text-decoration: none; font-size: 13px; font-weight: 600; transition: 0.2s; display: inline-block; }
-        .btn-view:hover { background: var(--bg-main); border-color: var(--primary); }
 
         .mechanic-badge { background: rgba(0, 82, 204, 0.1); color: var(--primary); padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; }
 
@@ -334,12 +332,11 @@ foreach ($allBookings as $b) {
                         <th>SERVICE TYPE</th>
                         <th>MECHANIC</th>
                         <th>STATUS</th>
-                        <th>ACTION</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php if (count($bookings) == 0): ?>
-                        <tr><td colspan="7" style="text-align: center; padding: 40px; color: var(--text-muted);">No bookings found matching your search.</td></tr>
+                        <tr><td colspan="6" style="text-align: center; padding: 40px; color: var(--text-muted);">No bookings found matching your search.</td></tr>
                     <?php else: ?>
                         <?php foreach ($bookings as $booking): ?>
                             <tr>
@@ -370,7 +367,6 @@ foreach ($allBookings as $b) {
                                         <option value="Completed" <?php echo ($booking['status'] == 'Completed') ? 'selected' : ''; ?>>Completed</option>
                                     </select>
                                 </td>
-                                <td><a href="../invoice/invoice.php?id=<?php echo $booking['id']; ?>" class="btn-view"><i class="fa-solid fa-eye"></i> View</a></td>
                             </tr>
                         <?php endforeach; ?>
                     <?php endif; ?>
