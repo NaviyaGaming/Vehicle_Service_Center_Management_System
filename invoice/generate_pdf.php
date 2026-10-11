@@ -32,6 +32,20 @@ if (!$booking) {
  $tax = 0;
  $total = $priceNumber + $tax;
 
+// Convert logo to Base64 so Dompdf can render it without path issues
+ $logo_path = __DIR__ . '/../logo.png'; // Go up one folder to find logo.png
+ $logo_base64 = '';
+if (file_exists($logo_path)) {
+    $logo_data = file_get_contents($logo_path);
+    $logo_base64 = 'data:image/png;base64,' . base64_encode($logo_data);
+}
+
+// Build the logo HTML tag safely
+ $logo_html = '';
+if ($logo_base64) {
+    $logo_html = '<img src="' . $logo_base64 . '" style="height: 50px; margin-right: 15px; vertical-align: middle;">';
+}
+
 // Construct the HTML for the PDF
  $html = '
 <!DOCTYPE html>
@@ -39,8 +53,9 @@ if (!$booking) {
 <head>
     <style>
         body { font-family: Helvetica, Arial, sans-serif; color: #0F172A; font-size: 14px; }
-        .header { display: flex; justify-content: space-between; border-bottom: 2px solid #0052CC; padding-bottom: 20px; }
-        .brand { font-size: 28px; font-weight: bold; color: #0052CC; }
+        .header { display: flex; justify-content: space-between; border-bottom: 2px solid #0052CC; padding-bottom: 20px; align-items: center; }
+        .brand { display: flex; align-items: center; }
+        .brand span { font-size: 28px; font-weight: bold; color: #0052CC; }
         .invoice-meta { text-align: right; font-size: 12px; color: #64748B; }
         .bill-to { margin-top: 30px; }
         .bill-to h3 { font-size: 12px; color: #64748B; text-transform: uppercase; margin-bottom: 5px; }
@@ -56,7 +71,10 @@ if (!$booking) {
 </head>
 <body>
     <div class="header">
-        <div class="brand">TorquePoint</div>
+        <div class="brand">
+            ' . $logo_html . '
+            <span>TorquePoint</span>
+        </div>
         <div class="invoice-meta">
             <strong>Invoice #INV-' . $booking['id'] . '</strong><br>
             Date: ' . date('M d, Y', strtotime($booking['created_at'])) . '<br>
