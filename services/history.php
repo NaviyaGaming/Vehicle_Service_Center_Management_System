@@ -136,7 +136,7 @@ if (strpos($userName, ' ') !== false) {
             <div class="dropdown-menu" id="dropdownMenu">
                 <a href="profile.php"><i class="fa-solid fa-user"></i> Profile</a>
                 <a href="history.php"><i class="fa-solid fa-clock-rotate-left"></i> History</a>
-                <a href="logout.php"><i class="fa-solid fa-arrow-right-from-bracket"></i> Logout</a>
+                <a href="../logout.php"><i class="fa-solid fa-arrow-right-from-bracket"></i> Logout</a>
             </div>
         </div>
     </header>
