@@ -230,7 +230,7 @@ foreach ($allBookings as $b) {
             </button>
             <span class="admin-badge"><i class="fa-solid fa-shield-halved"></i> Administrator</span>
             <div class="user-info"><i class="fa-solid fa-user-tie"></i> <?php echo htmlspecialchars($_SESSION['user_email']); ?></div>
-            <a href="../services/logout.php" class="btn-logout">Logout</a>
+            <a href="../loginPage/login.html" class="btn-logout">Logout</a>
         </div>
     </header>
 
