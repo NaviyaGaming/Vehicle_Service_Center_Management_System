@@ -1,7 +1,19 @@
 <?php
 session_start();
-session_unset(); // Remove all session variables
-session_destroy(); // Destroy the session
-header("Location: home/home.php"); // Redirect back to the home page
-exit();
+session_unset();
+session_destroy();
 ?>
+<!DOCTYPE html>
+<html>
+<head>
+    <script>
+        // Clear chat token and any other session storage on logout
+        try {
+            localStorage.removeItem('chat_token');
+        } catch (e) {}
+        // Redirect back to home page
+        window.location.href = 'home/home.php';
+    </script>
+</head>
+<body></body>
+</html>

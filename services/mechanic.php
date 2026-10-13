@@ -107,7 +107,6 @@ if (!$user || $user['mechanic_id'] === null) {
                             <?php endif; ?>
                             <option value="Awaiting Parts">Mark as Awaiting Parts</option>
                             <option value="Ready for Pickup">Mark as Ready for Pickup</option>
-                            <option value="Completed">Mark as Completed</option>
                         </select>
                     </div>
                 </div>

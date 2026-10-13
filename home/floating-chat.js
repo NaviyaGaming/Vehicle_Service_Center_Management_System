@@ -53,7 +53,10 @@
     const closeBtn = document.getElementById('chatModalClose');
     
     let token = null;
-    try { token = localStorage.getItem('chat_token'); } catch (e) {}
+    try { 
+        token = localStorage.getItem('chat_token'); 
+    } catch (e) {}
+
     let lastId = 0;
     let timer = null;
 
