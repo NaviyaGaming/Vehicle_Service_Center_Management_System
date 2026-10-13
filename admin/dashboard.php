@@ -157,7 +157,8 @@ foreach ($allBookings as $b) {
         .theme-toggle:hover { border-color: var(--primary); color: var(--primary); }
         .admin-badge { background: rgba(0, 82, 204, 0.1); color: var(--primary); padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
         .user-info { display: flex; align-items: center; gap: 8px; color: var(--text-muted); font-size: 14px; font-weight: 500; }
-        .btn-logout { color: var(--danger); text-decoration: none; font-weight: 600; font-size: 14px; }
+        .btn-logout { color: var(--danger); text-decoration: none; font-weight: 600; font-size: 14px; padding: 8px 16px; border: 1px solid var(--danger); border-radius: 8px; transition: 0.2s; }
+        .btn-logout:hover { background: var(--danger); color: #FFFFFF; }
 
         .container { max-width: 1200px; margin: 40px auto; padding: 0 20px; }
         .page-head { margin-bottom: 32px; }
@@ -196,6 +197,8 @@ foreach ($allBookings as $b) {
         .input-search:focus { outline: none; border-color: var(--primary); }
         .select-status { padding: 10px 16px; border: 1px solid var(--border-color); border-radius: 6px; font-family: 'Inter', sans-serif; font-size: 14px; background: var(--surface); color: var(--text-main); cursor: pointer; }
         .btn-filter { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 6px; font-weight: 600; cursor: pointer; }
+        .btn-view { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; background: var(--bg-main); color: var(--text-muted); border: 1px solid var(--border-color); border-radius: 6px; font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+        .btn-view:hover { border-color: var(--primary); color: var(--primary); }
         .btn-export { background: var(--text-main); color: var(--bg-main); text-decoration: none; padding: 10px 20px; border-radius: 6px; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; }
         .btn-export:hover { opacity: 0.9; }
 
