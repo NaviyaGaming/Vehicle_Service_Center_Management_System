@@ -75,7 +75,7 @@ if (!$user || $user['mechanic_id'] === null) {
         </a>
         <div style="display: flex; align-items: center; gap: 16px;">
             <span class="mech-badge"><i class="fa-solid fa-wrench"></i> <?php echo htmlspecialchars($user['name']); ?></span>
-            <a href="logout.php" class="btn-logout">Logout</a>
+            <a href="../logout.php" class="btn-logout">Logout</a>
         </div>
     </div>
 

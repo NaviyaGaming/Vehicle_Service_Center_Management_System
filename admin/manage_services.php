@@ -77,7 +77,7 @@ if (isset($_GET['delete'])) {
         <div class="nav">
             <a href="dashboard.php">Dashboard</a>
             <a href="manage_services.php" style="color: var(--primary); font-weight: 600;">Manage Services</a>
-            <a href="../services/logout.php" style="color: var(--danger);">Logout</a>
+            <a href="../logout.php" style="color: var(--danger);">Logout</a>
         </div>
     </div>
 

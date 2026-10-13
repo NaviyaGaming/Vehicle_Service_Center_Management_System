@@ -135,7 +135,7 @@ if ($month == 13) { $month = 1; $year++; }
         <div class="nav">
             <a href="dashboard.php">Dashboard</a>
             <a href="manage_calendar.php" style="color: var(--primary); font-weight: 600;">Manage Calendar</a>
-            <a href="../services/logout.php" style="color: var(--danger);">Logout</a>
+            <a href="../logout.php" style="color: var(--danger);">Logout</a>
         </div>
     </div>
 

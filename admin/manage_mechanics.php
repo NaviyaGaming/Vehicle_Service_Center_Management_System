@@ -84,7 +84,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['assign_user'])) {
             <a href="dashboard.php">Dashboard</a>
             <a href="manage_services.php">Services</a>
             <a href="manage_mechanics.php" style="color: var(--primary); font-weight: 600;">Mechanics</a>
-            <a href="../services/logout.php" style="color: var(--danger);">Logout</a>
+            <a href="../logout.php" style="color: var(--danger);">Logout</a>
         </div>
     </div>
 
