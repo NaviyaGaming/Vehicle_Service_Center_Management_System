@@ -21,11 +21,11 @@ if (!$user || $user['is_admin'] != 1) {
  $search = $_GET['search'] ?? '';
  $status = $_GET['status'] ?? '';
 
-// Fetch ALL bookings for the global charts (unfiltered)
- $allBookings = $pdo->query("SELECT * FROM bookings ORDER BY created_at DESC")->fetchAll(PDO::FETCH_ASSOC);
+// Fetch ALL active bookings for global charts (excluding Cancelled)[cite: 43]
+ $allBookings = $pdo->query("SELECT * FROM bookings WHERE status != 'Cancelled' ORDER BY created_at DESC")->fetchAll(PDO::FETCH_ASSOC);
 
-// Fetch FILTERED bookings for the data table (WITH MECHANIC JOIN)
- $sql = "SELECT b.*, m.name as mechanic_name FROM bookings b LEFT JOIN mechanics m ON b.assigned_mechanic_id = m.id WHERE 1=1";
+// Fetch FILTERED bookings for the data table (excluding Cancelled)[cite: 43]
+ $sql = "SELECT b.*, m.name as mechanic_name FROM bookings b LEFT JOIN mechanics m ON b.assigned_mechanic_id = m.id WHERE b.status != 'Cancelled'";
  $params = [];
 
 if (!empty($search)) {
@@ -41,9 +41,9 @@ if (!empty($status)) {
  $sql .= " ORDER BY b.created_at DESC";
  $stmt = $pdo->prepare($sql);
  $stmt->execute($params);
- $bookings = $stmt->fetchAll(PDO::FETCH_ASSOC); // This is the filtered list for the table
+ $bookings = $stmt->fetchAll(PDO::FETCH_ASSOC); // This is the filtered list for the table[cite: 43]
 
-// Calculate quick stats based on ALL bookings (not filtered)
+// Calculate quick stats based on ALL active bookings[cite: 43]
  $totalBookings = count($allBookings);
  $totalRevenue = 0;
  $pendingCount = 0;
@@ -75,14 +75,12 @@ foreach ($allBookings as $b) {
         $pendingCount++;
     }
 
-    // Count service types for Pie Chart (exclude cancelled)
-    if ($b['status'] !== 'Cancelled') {
-        $sName = $b['service_name'];
-        if (!isset($serviceCounts[$sName])) {
-            $serviceCounts[$sName] = 0;
-        }
-        $serviceCounts[$sName]++;
+    // Count service types for Pie Chart
+    $sName = $b['service_name'];
+    if (!isset($serviceCounts[$sName])) {
+        $serviceCounts[$sName] = 0;
     }
+    $serviceCounts[$sName]++;
 }
 
  $chartDates = array_keys($last7Days);
@@ -304,7 +302,6 @@ foreach ($allBookings as $b) {
                     <option value="In Progress" <?php if($status == 'In Progress') echo 'selected'; ?>>In Progress</option>
                     <option value="Ready for Pickup" <?php if($status == 'Ready for Pickup') echo 'selected'; ?>>Ready for Pickup</option>
                     <option value="Completed" <?php if($status == 'Completed') echo 'selected'; ?>>Completed</option>
-                    <option value="Cancelled" <?php if($status == 'Cancelled') echo 'selected'; ?>>Cancelled</option>
                 </select>
                 <button type="submit" class="btn-filter"><i class="fa-solid fa-filter"></i> Filter</button>
                 <a href="dashboard.php" class="btn-view" style="padding: 10px 16px;">Clear</a>

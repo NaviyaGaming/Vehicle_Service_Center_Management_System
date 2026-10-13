@@ -7,24 +7,24 @@ if (!isset($_SESSION['user_email'])) {
     exit;
 }
 
- $userEmail = $_SESSION['user_email'];
+$userEmail = $_SESSION['user_email'];
 
 // Fetch user data for Avatar
- $stmt = $pdo->prepare("SELECT name FROM users WHERE email = ?");
- $stmt->execute([$userEmail]);
- $user = $stmt->fetch(PDO::FETCH_ASSOC);
+$stmt = $pdo->prepare("SELECT name FROM users WHERE email = ?");
+$stmt->execute([$userEmail]);
+$user = $stmt->fetch(PDO::FETCH_ASSOC);
 
- $userName = $user['name'] ?? $userEmail;
- $initials = strtoupper(substr($userName, 0, 1));
+$userName = $user['name'] ?? $userEmail;
+$initials = strtoupper(substr($userName, 0, 1));
 if (strpos($userName, ' ') !== false) {
     $parts = explode(' ', $userName);
     $initials = strtoupper(substr($parts[0], 0, 1) . substr(end($parts), 0, 1));
 }
 
 // Fetch bookings
- $stmt = $pdo->prepare("SELECT * FROM bookings WHERE user_email = ? ORDER BY created_at DESC");
- $stmt->execute([$userEmail]);
- $bookings = $stmt->fetchAll(PDO::FETCH_ASSOC);
+$stmt = $pdo->prepare("SELECT * FROM bookings WHERE user_email = ? ORDER BY created_at DESC");
+$stmt->execute([$userEmail]);
+$bookings = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -38,7 +38,7 @@ if (strpos($userName, ' ') !== false) {
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="../home/home-chat.css">
-<link rel="stylesheet" href="../home/floating-chat.css">
+    <link rel="stylesheet" href="../home/floating-chat.css">
     <style>
         :root {
             --primary: #0052CC; --primary-hover: #0042A5; --bg-main: #F8FAFC; --surface: #FFFFFF;
@@ -83,6 +83,9 @@ if (strpos($userName, ' ') !== false) {
         .status-paid { background: rgba(16, 185, 129, 0.1); color: var(--success); }
         .status-pending { background: rgba(245, 158, 11, 0.1); color: var(--warning); }
         .status-cancelled { background: rgba(100, 116, 139, 0.1); color: var(--text-muted); }
+
+        .btn-cancel-booking { background: rgba(239, 68, 68, 0.1); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.2); padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; transition: 0.2s; margin-top: 8px; display: inline-flex; align-items: center; gap: 4px; }
+        .btn-cancel-booking:hover { background: var(--danger); color: white; }
 
         .empty-state { text-align: center; padding: 60px 20px; }
         .empty-state i { font-size: 40px; color: var(--border-color); margin-bottom: 16px; }
@@ -179,24 +182,30 @@ if (strpos($userName, ' ') !== false) {
                                 <td>
                                     <?php 
                                         $status = $booking['status'];
-                                        // Define the stages for the progress bar
                                         $stages = ['Vehicle Received', 'Awaiting Parts', 'In Progress', 'Ready for Pickup'];
                                         
                                         if ($status === 'Pending Payment') {
+                                            echo "<div style='display:flex; flex-direction:column; align-items:flex-start; gap:6px;'>";
                                             echo "<span class='status-badge status-pending'>Pending Payment</span>";
+                                            echo "<button class='btn-cancel-booking' onclick='cancelBooking(" . $booking['id'] . ")'><i class='fa-solid fa-xmark'></i> Cancel Booking</button>";
+                                            echo "</div>";
+                                        } elseif ($status === 'Paid' || $status === 'Vehicle Received') {
+                                            echo "<div style='display:flex; flex-direction:column; align-items:flex-start; gap:6px;'>";
+                                            echo "<span class='status-badge status-paid'>" . htmlspecialchars($status) . "</span>";
+                                            echo "<button class='btn-cancel-booking' onclick='cancelBooking(" . $booking['id'] . ")'><i class='fa-solid fa-xmark'></i> Cancel Booking</button>";
+                                            echo "</div>";
                                         } elseif ($status === 'Cancelled') {
                                             echo "<span class='status-badge status-cancelled'>Cancelled</span>";
                                         } elseif ($status === 'Completed') {
                                             echo "<span class='status-badge status-paid'>Service Completed ✓</span>";
                                         } else {
-                                            // Draw the visual progress bar!
+                                            // Draw the visual progress bar for active statuses ('Awaiting Parts', 'In Progress', etc.)
                                             echo "<div class='tracker'>";
                                             foreach ($stages as $stage) {
                                                 $active = false;
                                                 $current = false;
                                                 if ($status === $stage) { $current = true; $active = true; }
                                                 
-                                                // Logic to light up previous stages
                                                 if ($status === 'In Progress' && in_array($stage, ['Vehicle Received'])) $active = true;
                                                 if ($status === 'Ready for Pickup' && in_array($stage, ['Vehicle Received', 'Awaiting Parts', 'In Progress'])) $active = true;
 
@@ -223,6 +232,31 @@ if (strpos($userName, ' ') !== false) {
     <div class="toast" id="toast"></div>                                  
     
     <script>
+        function cancelBooking(bookingId) {
+            if (!confirm('Are you sure you want to cancel this booking?')) return;
+
+            fetch('cancel_booking.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ booking_id: bookingId })
+            })
+            .then(res => res.json())
+            .then(data => {
+                const toast = document.getElementById('toast');
+                toast.innerText = data.message;
+                toast.style.display = 'block';
+                if (data.success) {
+                    setTimeout(() => location.reload(), 1200);
+                } else {
+                    setTimeout(() => { toast.style.display = 'none'; }, 3000);
+                }
+            })
+            .catch(err => {
+                console.error('Error cancelling booking:', err);
+                alert('A network error occurred.');
+            });
+        }
+
         // Avatar Dropdown Toggle
         function toggleDropdown() {
             const menu = document.getElementById('dropdownMenu');
@@ -236,8 +270,8 @@ if (strpos($userName, ' ') !== false) {
         }
     </script>
     <script>
-  window.CHAT_API = '../admin/api.php';
-</script>
-<script src="../home/floating-chat.js"></script>
+      window.CHAT_API = '../admin/api.php';
+    </script>
+    <script src="../home/floating-chat.js"></script>
 </body>
 </html>
