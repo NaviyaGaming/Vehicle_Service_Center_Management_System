@@ -117,7 +117,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="dropdown-menu" id="dropdownMenu">
                 <a href="profile.php"><i class="fa-solid fa-user"></i> Profile</a>
                 <a href="history.php"><i class="fa-solid fa-clock-rotate-left"></i> History</a>
-                <a href="logout.php"><i class="fa-solid fa-arrow-right-from-bracket"></i> Logout</a>
+                <a href="../logout.php"><i class="fa-solid fa-arrow-right-from-bracket"></i> Logout</a>
             </div>
         </div>
     </header>
@@ -159,18 +159,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
     </div>
 
-    <!-- Tawk.to Live Chat Script -->
-    <script type="text/javascript">
-    var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
-    (function(){
-    var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
-    s1.async=true;
-    s1.src='https://embed.tawk.to/6abf9188df2d5634c099c01d/1k3u5101i';
-    s1.charset='UTF-8';
-    s1.setAttribute('crossorigin','*');
-    s0.parentNode.insertBefore(s1,s0);
-    })();
-    </script>
+    
 
     <script>
         // Avatar Dropdown Toggle
