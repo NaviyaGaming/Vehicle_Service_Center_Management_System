@@ -7,8 +7,7 @@ if (!is_admin()) {
     http_response_code(403);
     exit('Access denied. Please log in as admin.');   // or: header('Location: /admin/login.php'); exit;
 }
-if (empty($_SESSION['csrf'])) {
-    $_SESSION['csrf'] = bin2hex(random_bytes(32));
+if (empty($_SESSION['csrf'])) {$_SESSION['csrf'] = bin2hex(random_bytes(32));
 }
 ?>
 <!DOCTYPE html>
@@ -18,7 +17,7 @@ if (empty($_SESSION['csrf'])) {
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Customer messages</title>
 <style>
-  :root { --blue:#0b4fc2; --ink:#0f172a; --muted:#64748b; --line:#e2e8f0; --bg:#f1f5f9; --green:#16a34a; }
+  :root { --blue:#0b4fc2; --ink:#0f172a; --muted:#64748b; --line:#e2e8f0; --bg:#f1f5f9; --green:#16a34a; --danger:#ef4444; }
   * { box-sizing:border-box; }
   body { margin:0; font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; color:var(--ink); background:var(--bg); }
   .wrap { display:grid; grid-template-columns:340px 1fr; height:calc(100vh - 32px); margin:16px; background:#fff; border:1px solid var(--line); border-radius:10px; overflow:hidden; }
@@ -43,7 +42,11 @@ if (empty($_SESSION['csrf'])) {
   .panel-head { padding:16px 22px; border-bottom:1px solid var(--line); display:flex; justify-content:space-between; align-items:center; gap:12px; }
   .panel-head .who { font-weight:600; font-size:17px; }
   .panel-head .mail { color:var(--muted); font-size:14px; }
+  .panel-head .panel-actions { display:flex; gap:8px; }
   .panel-head button { border:1px solid var(--line); background:#fff; border-radius:8px; padding:8px 14px; cursor:pointer; font:inherit; }
+  .btn-delete { color:var(--danger); border-color:#fca5a5 !important; }
+  .btn-delete:hover { background:#fef2f2; }
+
   #log { flex:1; overflow-y:auto; padding:20px 22px; background:#f8fafc; display:flex; flex-direction:column; gap:10px; }
   .msg { max-width:70%; padding:10px 14px; border-radius:14px; line-height:1.4; white-space:pre-wrap; word-wrap:break-word; }
   .msg.user  { align-self:flex-start; background:#fff; border:1px solid var(--line); border-bottom-left-radius:4px; }
@@ -68,7 +71,10 @@ if (empty($_SESSION['csrf'])) {
   <section class="panel">
     <div class="panel-head" id="head" style="display:none">
       <div><div class="who" id="who"></div><div class="mail" id="mail"></div></div>
-      <button id="toggleBtn" type="button">Close chat</button>
+      <div class="panel-actions">
+        <button id="toggleBtn" type="button">Close chat</button>
+        <button id="deleteBtn" class="btn-delete" type="button">Delete chat</button>
+      </div>
     </div>
     <div id="log"><div class="placeholder">Select a conversation to start replying.</div></div>
     <form class="composer" id="composer" style="display:none">
@@ -137,11 +143,9 @@ async function loadSessions() {
 /* ---------- open a conversation ---------- */
 function openSession(s) {
   currentId = +s.id; lastId = 0;
-  $('log').innerHTML = '';
-  $('who').textContent = `${s.first_name} ${s.last_name}`;
+  $('log').innerHTML = '';$('who').textContent = `${s.first_name} ${s.last_name}`;
   $('mail').textContent = s.email;
-  $('head').style.display = 'flex';
-  $('composer').style.display = 'flex';
+  $('head').style.display = 'flex';$('composer').style.display = 'flex';
   setStatus(s.status);
   loadMessages(true);
   loadSessions();
@@ -150,9 +154,7 @@ function openSession(s) {
 
 function setStatus(status) {
   currentStatus = status;
-  $('toggleBtn').textContent = status === 'open' ? 'Close chat' : 'Reopen chat';
-  $('reply').disabled = $('sendBtn').disabled = (status === 'closed');
-  $('reply').placeholder = status === 'closed'
+  $('toggleBtn').textContent = status === 'open' ? 'Close chat' : 'Reopen chat';$('reply').disabled = $('sendBtn').disabled = (status === 'closed');$('reply').placeholder = status === 'closed'
     ? 'This chat is closed. Reopen it to reply.'
     : 'Write a reply... (Enter to send, Shift+Enter for a new line)';
 }
@@ -198,6 +200,22 @@ $('toggleBtn').addEventListener('click', async () => {
   const next = currentStatus === 'open' ? 'closed' : 'open';
   await post('admin_status', { session_id: currentId, status: next });
   setStatus(next);
+  loadSessions();
+});
+
+$('deleteBtn').addEventListener('click', async () => {
+  if (!currentId) return;
+  if (!confirm('Are you sure you want to delete this conversation? This action cannot be undone.')) return;
+  const r = await post('admin_delete', { session_id: currentId });
+  if (r.error) {
+    alert(r.error);
+    return;
+  }
+  // Clear selection and close panel
+  currentId = null;
+  lastId = 0;
+  $('head').style.display = 'none';
+  $('composer').style.display = 'none';$('log').innerHTML = '<div class="placeholder">Select a conversation to start replying.</div>';
   loadSessions();
 });
 

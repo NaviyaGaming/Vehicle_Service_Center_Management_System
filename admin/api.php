@@ -178,6 +178,18 @@ try {
             $pdo->prepare('UPDATE chat_sessions SET status = ? WHERE id = ?')->execute([$status, $s['id']]);
             json_out(['ok' => true]);
 
+        // Admin deletes a conversation and all its messages
+        case 'admin_delete':
+            require_admin_api();
+            check_csrf();
+            must_post();
+            $s = admin_session($pdo, (int) ($_POST['session_id'] ?? 0));
+            $pdo->beginTransaction();
+            $pdo->prepare('DELETE FROM chat_messages WHERE session_id = ?')->execute([$s['id']]);
+            $pdo->prepare('DELETE FROM chat_sessions WHERE id = ?')->execute([$s['id']]);
+            $pdo->commit();
+            json_out(['ok' => true]);
+
         default:
             json_out(['error' => 'Unknown action'], 400);
     }
