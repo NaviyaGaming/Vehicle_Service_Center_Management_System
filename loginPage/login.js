@@ -45,28 +45,55 @@ passwordToggle.addEventListener('click', () => {
     passwordToggle.querySelector('i').className = isPassword ? 'fa-regular fa-eye-slash' : 'fa-regular fa-eye';
 });
 
-// ===== Form submission =====
+// ===== Form submission (REAL LOGIN) =====
 const form = document.getElementById('login-form');
 const signInBtn = document.getElementById('sign-in-btn');
 const emailInput = document.getElementById('email');
 
-form.addEventListener('submit', (e) => {
+form.addEventListener('submit', async (e) => {
     e.preventDefault();
     signInBtn.classList.add('loading');
-    
-    setTimeout(() => {
+
+    try {
+        // Send credentials to the server for real authentication
+        const response = await fetch('login.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                email: emailInput.value.trim(),
+                password: passwordInput.value
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            // Real session created server-side — safe to redirect
+            showToast('Welcome back! Redirecting to dashboard…', 'success');
+
+            // Save user email to localStorage (cosmetic only)
+            localStorage.setItem('torquepoint_user', JSON.stringify({ email: emailInput.value.trim() }));
+
+            setTimeout(() => {
+                window.location.href = data.redirect || '../services/services.php';
+            }, 1200);
+        } else if (data.needs_verification) {
+            // Account exists but email not verified yet
+            signInBtn.classList.remove('loading');
+            showToast('Please verify your email first. Redirecting…', 'error');
+            setTimeout(() => {
+                window.location.href = 'verify.php';
+            }, 1500);
+        } else {
+            // Wrong email/password
+            signInBtn.classList.remove('loading');
+            showToast(data.message || 'Invalid email or password.', 'error');
+        }
+    } catch (error) {
         signInBtn.classList.remove('loading');
-        showToast(`Welcome back! Redirecting to dashboard…`, 'success');
-        
-        // Save user email to localStorage
-        const userEmail = emailInput.value;
-        localStorage.setItem('torquepoint_user', JSON.stringify({ email: userEmail }));
-        
-        // Simulate redirect
-        setTimeout(() => {
-            window.location.href = '../services/services.php';
-        }, 1200);
-    }, 1600);
+        showToast('Network error. Is XAMPP running?', 'error');
+        console.error('Login error:', error);
+    }
 });
 
 // ===== Google Sign-In =====
