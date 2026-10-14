@@ -225,14 +225,11 @@ if ($is_logged_in) {
   </footer>
 
 <script>
-  // Path from this page to the chat api.php. Change it if your folder has a different name.
+  // Path from this page to the chat api.php.
   window.CHAT_API = '../admin/api.php';
 </script>
 <script src="home.js"></script>
 <script src="home-chat.js"></script>
-<script>
-  window.CHAT_API = '../admin/api.php';
-</script>
 <script src="floating-chat.js"></script>
 </body>
 </html>
