@@ -1,6 +1,6 @@
 <?php
 session_start();
-require_once '../db_connect.php';
+require_once __DIR__ . '/../db_connect.php';
 
 // Security check: If not logged in, or NOT an admin, redirect them away
 if (!isset($_SESSION['user_email'])) {
@@ -231,7 +231,7 @@ foreach ($allBookings as $b) {
             </button>
             <span class="admin-badge"><i class="fa-solid fa-shield-halved"></i> Administrator</span>
             <div class="user-info"><i class="fa-solid fa-user-tie"></i> <?php echo htmlspecialchars($_SESSION['user_email']); ?></div>
-            <a href="../loginPage/login.html" class="btn-logout">Logout</a>
+            <a href="../logout.php" class="btn-logout">Logout</a>
         </div>
     </header>
 

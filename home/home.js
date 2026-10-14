@@ -21,7 +21,7 @@ if (loggedInUser) {
     // 1. Change all "Get Started" links to go to services.html instead of login.html
     document.querySelectorAll('a[href="login.html"]').forEach(link => {
         if (link.id !== 'loginLink') {
-            link.href = '../services/services.html';
+            link.href = '../services/services.php';
         }
     });
 
@@ -35,11 +35,12 @@ if (loggedInUser) {
     logoutLink.className = "nav-link";
     logoutLink.innerHTML = '<i class="fa-solid fa-arrow-right-from-bracket"></i> Logout';
     
-    // When logout is clicked, clear the storage and reload
+    // When logout is clicked, hit the real logout endpoint (destroys PHP session
+    // and clears localStorage), which then redirects to home.php
     logoutLink.addEventListener('click', (e) => {
         e.preventDefault();
         localStorage.removeItem('torquepoint_user');
-        window.location.href = 'home.html';
+        window.location.href = '../logout.php';
     });
 
     // Insert the logout link right after the login link in the navbar
