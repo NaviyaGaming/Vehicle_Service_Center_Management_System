@@ -5,7 +5,7 @@ require __DIR__ . '/config.php';
 
 if (!is_admin()) {
     http_response_code(403);
-    exit('Access denied. Please log in as admin.');   // or: header('Location: /admin/login.php'); exit;
+    exit('Access denied. Please log in as admin.');   
 }
 if (empty($_SESSION['csrf'])) {$_SESSION['csrf'] = bin2hex(random_bytes(32));
 }

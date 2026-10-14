@@ -1,5 +1,5 @@
 <?php
-// ---------- Database settings: change these ----------
+
 const DB_HOST = 'localhost';
 const DB_NAME = 'torquepoint_db';
 const DB_USER = 'root';
