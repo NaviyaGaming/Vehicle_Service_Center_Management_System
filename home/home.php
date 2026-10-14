@@ -225,7 +225,7 @@ if ($is_logged_in) {
   </footer>
 
 <script>
-  // Path from this page to the chat api.php.
+
   window.CHAT_API = '../admin/api.php';
 </script>
 <script src="home.js"></script>
