@@ -7,7 +7,7 @@ A full-stack, enterprise-grade web application built using PHP, MySQL, and the S
 * **Frontend:** HTML5, CSS3 (Flexbox/Grid), JavaScript (Fetch API)
 * **Backend:** PHP 8 (Procedural & PDO)
 * **Database:** MySQL (torquepoint_db)
-* **Integrations:** Stripe API, Google OAuth, PHPMailer, Dompdf, Chart.js, Tawk.to
+* **Integrations:** Stripe API, Google OAuth, PHPMailer, Dompdf, Chart.js.
 
 ## Features
 - Secure Dual Authentication (Google Login + Email/Password with Bcrypt & OTP verification)
