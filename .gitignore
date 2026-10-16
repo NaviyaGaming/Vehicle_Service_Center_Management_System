@@ -1,0 +1,14 @@
+# Sensitive Configuration
+db_connect.php
+
+# Third-party Libraries (too heavy for GitHub, developers can download them separately)
+dompdf/
+PHPMailer/
+
+# IDE files
+.vscode/
+.idea/
+
+# System files
+Thumbs.db
+.DS_Store
