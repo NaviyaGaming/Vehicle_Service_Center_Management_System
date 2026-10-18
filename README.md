@@ -1,5 +1,5 @@
 
-# Vehicle Service Management System 🚗⚙️
+# Vehicle Service Management System 
 
 A full-stack, enterprise-grade web application built using PHP, MySQL, and the Stripe API. It digitalizes the day-to-day operations of a vehicle service center, allowing customers to book appointments online, pay via Stripe, and track their service status in real-time.
 
