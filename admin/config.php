@@ -34,11 +34,6 @@ function json_out(array $data, int $code = 200): void
     exit;
 }
 
-/**
- * IMPORTANT: connect this to YOUR admin login.
- * Change the session key below to whatever your admin site sets after login
- * (for example $_SESSION['admin_id'] or $_SESSION['user_role'] === 'admin').
- */
 function is_admin(): bool
 {
     static $cached = null;
@@ -48,7 +43,7 @@ function is_admin(): bool
     $cached = false;
 
     if (!empty($_SESSION['user_email'])) {
-        // Change 'isAdmin' to 'is_admin' to match your database and dashboard.php
+
         $st = db()->prepare('SELECT is_admin FROM users WHERE email = ? LIMIT 1');
         $st->execute([$_SESSION['user_email']]);
         $cached = ((int) $st->fetchColumn() === 1);
