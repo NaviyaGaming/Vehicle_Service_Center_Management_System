@@ -146,7 +146,7 @@ if ($new_status === 'Completed') {
             $mail->setFrom('pointtorque@gmail.com', 'TorquePoint Service Center');
             $mail->addAddress($user_email); 
             
-            $rating_link = "http://localhost/groupProject/services/rate.php?id=" . $booking_id;
+            $rating_link = "http://localhost/Vehicle-Service-Management-System/services/rate.php?id=" . $booking_id;
             
             $mail->isHTML(true);
             $mail->Subject = "Thank you for choosing TorquePoint!";
