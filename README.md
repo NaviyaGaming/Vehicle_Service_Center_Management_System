@@ -20,6 +20,103 @@ A full-stack, enterprise-grade web application built using PHP, MySQL, and the S
 
 ---
 
+## Database Entity-Relationship (ER) Diagram
+
+The system uses a normalized MySQL database (`torquepoint_db`) with 8 interconnected tables.
+
+```mermaid
+erDiagram
+    USERS ||--o{ BOOKINGS : "places"
+    MECHANICS ||--o{ BOOKINGS : "assigned_to"
+    BOOKINGS ||--o| RATINGS : "receives"
+    USERS ||--o{ RATINGS : "writes"
+    SERVICE_PACKAGES }o--o{ BOOKINGS : "referenced_by"
+    BLOCKED_DATES }o--o{ BOOKINGS : "restricts"
+    USERS ||--o{ CHAT_SESSIONS : "starts"
+    CHAT_SESSIONS ||--o{ CHAT_MESSAGES : "contains"
+
+    USERS {
+        int id PK
+        varchar email UK
+        varchar name
+        varchar phone
+        varchar password
+        varchar login_type
+        tinyint is_admin
+        tinyint is_verified
+        varchar verification_pin
+        varchar role
+        int mechanic_id FK
+        varchar address
+        timestamp created_at
+    }
+
+    MECHANICS {
+        int id PK
+        varchar name
+        tinyint is_available
+    }
+
+    BOOKINGS {
+        int id PK
+        varchar user_email FK
+        varchar vehicle_details
+        varchar service_name
+        varchar est_time
+        varchar price
+        varchar status
+        int assigned_mechanic_id FK
+        int vehicle_mileage
+        date booking_date
+        varchar booking_time
+        timestamp created_at
+    }
+
+    SERVICE_PACKAGES {
+        int id PK
+        varchar vehicle_type
+        varchar service_name
+        text description
+        varchar price
+        varchar time
+    }
+
+    RATINGS {
+        int id PK
+        int booking_id FK
+        varchar user_email FK
+        int rating
+        text review
+        timestamp created_at
+    }
+
+    BLOCKED_DATES {
+        int id PK
+        date date UK
+        varchar reason
+    }
+
+    CHAT_SESSIONS {
+        int id PK
+        varchar token UK
+        varchar user_email FK
+        varchar status
+        timestamp created_at
+        timestamp last_activity
+    }
+
+    CHAT_MESSAGES {
+        int id PK
+        int session_id FK
+        varchar sender
+        text message
+        tinyint is_read
+        timestamp created_at
+    }
+```
+
+---
+
 ## ⚠️ IMPORTANT SETUP INSTRUCTIONS (Please Read Carefully)
 
 To ensure the system runs perfectly on your local machine, please follow these steps exactly. Skipping the XAMPP configuration step will cause the PDF generation to fail!
